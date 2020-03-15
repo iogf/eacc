@@ -18,9 +18,8 @@ the AST's resulting from your grammar specification at the time it is being pars
 well for simple grammars like basic mathematical expressions.
 
 Characterization plays a basic role in human reasoning. it is necessary
-to characterize first to reason. Knowing a duck is a duck it gives you the opportunity to know
-when it is with chickens then take some action to avoid issues with mixing those breeds. 
-This tool is built strictly on top of that concept in essence. 
+to characterize first to reason. Knowing a duck is a duck it gives you the opportunity to trigger
+more complex patterns like when the duck is with chickens, wolves etc then taking an action.
 
 The approach of defining types for basic structures of data then matching these against existing
 rules it automatically handles the powerful recursivity that exists in Backus-Naur notation 
