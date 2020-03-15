@@ -153,3 +153,30 @@ class Period(TokType):
 
 class Char(TokType):
     pass
+
+class Comment(TokType):
+    pass
+
+class Text(TokType):
+    pass
+
+class Error(TokType):
+    pass
+
+class Operator(TokType):
+    pass
+
+class Literal(TokType):
+    pass
+
+class Punctuation(TokType):
+    pass
+
+class Punctuation(TokType):
+    pass
+
+class Constant(TokType):
+    pass
+
+class Declaration(TokType):
+    pass
