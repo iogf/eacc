@@ -19,7 +19,7 @@ well for simple grammars like basic mathematical expressions.
 
 Characterization plays a basic role in human reasoning. it is necessary
 to characterize first to reason. Knowing a duck is a duck it gives you the opportunity to trigger
-more complex patterns like when the duck is with chickens, wolves etc then taking an action.
+more complex patterns like when the duck is with chickens or wolves to take an action.
 
 The approach of defining types for basic structures of data then matching these against existing
 rules it automatically handles the powerful recursivity that exists in Backus-Naur notation 
