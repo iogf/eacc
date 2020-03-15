@@ -35,12 +35,6 @@ to handle ambiguous grammar in a similar fashion to Backus-Naur in a succinct ap
 
 ### Lexer
 
-yacc also implements a powerful parsing library. It uses a similar syntax to Backus-Naur on Python classes. 
-The main idea consists of implementing token patterns and specifying a type for them. 
-
-When patterns are matched they are assigned a type and rematched against other existing patterns. That allows one
-to handle some parsing problems in a consistent and expressive manner.
-
 The lexer is really powerful it can handle some interesting cases in a short and simple manner.
 
 ~~~python
