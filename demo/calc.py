@@ -35,9 +35,7 @@ class CalcGrammar(Grammar):
     r_done  = Rule(Sof, Num, Eof)
 
     expression.add(r_paren, r_plus, r_minus, r_mul, r_div, r_done)
-    
-    discard = [Blank]
-    root    = [expression]
+    root = [expression]
 
 def plus(expr, sign, term):
     return expr.val() + term.val()

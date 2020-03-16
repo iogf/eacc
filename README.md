@@ -137,6 +137,7 @@ evaluate these rules according to your necessities.
 The below code specifies a lexer and a parsing approach for a simple expression calculator.
 
 ~~~python
+
 from yacc.yacc import Rule, Grammar, Struct, Yacc
 from yacc.lexer import Lexer, LexMap, LexNode, XSpec
 from yacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
@@ -152,7 +153,7 @@ class CalcTokens(XSpec):
     t_div    = LexNode(r'\/', Div)
 
     t_num    = LexNode(r'[0-9]+', Num, float)
-    t_blank  = LexNode(r' +', Blank)
+    t_blank  = LexNode(r' +', Blank, discard=True)
 
     expression.add(t_plus, t_minus, t_lparen, t_num, 
     t_blank, t_rparen, t_mul, t_div)
@@ -173,9 +174,7 @@ class CalcGrammar(Grammar):
     r_done  = Rule(Sof, Num, Eof)
 
     expression.add(r_paren, r_plus, r_minus, r_mul, r_div, r_done)
-    
-    discard = [Blank]
-    root    = [expression]
+    root = [expression]
 
 def plus(expr, sign, term):
     return expr.val() + term.val()
@@ -282,26 +281,24 @@ parts of a given document.
 You may be wondering why it looks like Backus-Naur, the reason is shown below:
 
 ~~~python
-class CalcGrammar(Grammar):
-    expression = Struct()
 
-    r_paren = Rule(LP, expression, RP, type=expression)
+class CalcTokens(XSpec):
+    expression = LexMap()
+    t_plus  = LexNode(r'\+', Plus)
+    t_minus = LexNode(r'\-', Minus)
 
-    r_div   = Rule(expression, Div, expression, type=expression)
-    r_mul   = Rule(expression, Mul, expression, type=expression)
-    o_div   = Rule(Div)
-    o_mul   = Rule(Mul)
+    t_lparen = LexNode(r'\(', LP)
+    t_rparen = LexNode(r'\)', RP)
+    t_mul    = LexNode(r'\*', Mul)
+    t_div    = LexNode(r'\/', Div)
 
-    r_plus  = Rule(expression, Plus, expression, type=expression, up=(o_mul, o_div))
-    r_minus = Rule(expression, Minus, expression, type=expression, up=(o_mul, o_div))
-    r_num = Rule(Num, type=expression)
+    t_num    = LexNode(r'[0-9]+', Num, float)
+    t_blank  = LexNode(r' +', Blank, discard=True)
 
-    r_done  = Rule(Sof, expression, Eof)
+    expression.add(t_plus, t_minus, t_lparen, t_num, 
+    t_blank, t_rparen, t_mul, t_div)
 
-    expression.add(r_paren, r_plus, r_minus, r_mul, r_div, r_num, r_done)
-
-    root    = [expression]
-    discard = [Blank]
+    root = [expression]
 ~~~
 
 When replacing the previous example CalcGrammar code for the above one and mapping r_num rule like.
@@ -339,7 +336,7 @@ class TupleTokens(XSpec):
     r_rparen = LexNode(r'\)', RP)
 
     r_num    = LexNode(r'[0-9]+', Num)
-    r_blank  = LexNode(r' +', Blank)
+    r_blank  = LexNode(r' +', Blank, discard=True)
 
     lexmap.add(r_lparen, r_rparen, r_num, r_blank)
     root = [lexmap]
@@ -355,7 +352,6 @@ class TupleGrammar(Grammar):
     r_done  = Rule(Sof, Num, Eof)
 
     struct.add(r_paren, r_done)
-    discard = [Blank]
     root = [struct]
 
 def done(sof, expr, eof):
