@@ -11,14 +11,16 @@ class Lexer:
     def __init__(self, xspec):
         """
         """
-        self.root       = xspec.root
-        self.discarded  = xspec.root
+        self.root = xspec.root
 
     def feed(self, data):
         """
         """
         yield Token('', Sof)
         tseq = self.process(data)
+        lmb  = lambda ind: not ind.discard
+        tseq = filter(lmb, tseq)
+        
         yield from tseq
         yield Token('', Eof)
 
@@ -83,7 +85,7 @@ class LexLink(XNode):
         return tseq
 
 class LexNode(XNode):
-    def __init__(self, regstr, type=TokVal, cast=None):
+    def __init__(self, regstr, type=TokVal, cast=None, discard=False):
         """
         """
         super(XNode, self).__init__()
@@ -92,6 +94,7 @@ class LexNode(XNode):
         self.type   = type
         self.cast   = cast
         self.match  = self.regex.match
+        self.discard = discard
 
     def consume(self, data, pos):
         regobj = self.match(data, pos)
@@ -100,7 +103,7 @@ class LexNode(XNode):
 
     def mktoken(self, regobj):
         token = Token(regobj.group(), self.type, 
-        self.cast, regobj.start(), regobj.end())
+        self.cast, regobj.start(), regobj.end(), self.discard)
         return TSeq((token,))
 
     def __repr__(self):

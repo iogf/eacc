@@ -11,7 +11,7 @@ class TupleTokens(XSpec):
     r_rparen = LexNode(r'\)', RP)
 
     r_num    = LexNode(r'[0-9]+', Num)
-    r_blank  = LexNode(r' +', Blank)
+    r_blank  = LexNode(r' +', Blank, discard=True)
 
     lexmap.add(r_lparen, r_rparen, r_num, r_blank)
     root = [lexmap]
@@ -27,7 +27,6 @@ class TupleGrammar(Grammar):
     r_done  = Rule(Sof, Num, Eof)
 
     struct.add(r_paren, r_done)
-    discard = [Blank]
     root = [struct]
 
 def done(sof, expr, eof):

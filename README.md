@@ -25,9 +25,6 @@ The approach of defining types for basic structures of data then matching these 
 rules it automatically handles the powerful recursivity that exists in Backus-Naur notation 
 with a higher level of expressivity.
 
-Despite of the notorious fact of it being exotic when it is absorbed correctly it turns easy 
-to reason on parsing documents. That was at least my first impression when i came up with the idea.
-
 The parser has a lookahead mechanism to express precedence when matching rules. It is quite powerful
 to implement parsers to handle document structures. The lookahead mechanism makes it possible
 to handle ambiguous grammar in a similar fashion to Backus-Naur in a succinct approach.

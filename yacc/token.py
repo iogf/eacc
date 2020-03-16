@@ -21,15 +21,19 @@ class PTree(list):
         return self.result
 
 class Token:
-    __slots__=['data', 'offset', 'type', 'value', 'pos', 'start', 'end']
+    __slots__=['data', 'offset', 'type', 'value', 
+    'pos', 'start', 'end', 'discard']
 
-    def __init__(self, data, type=None, cast=None, start=None, end=None):
+    def __init__(self, data, type=None, cast=None, 
+        start=None, end=None, discard=False):
+
         self.data = data
         self.value = cast(data) if cast else data
         self.type = type
         self.pos = (start, end)
         self.start = start
         self.end = end
+        self.discard = discard
 
     def val(self):
         return self.value
@@ -39,8 +43,6 @@ class Token:
 
 class TSeq(list):
     """
-    This is meant to be returned by XNode's instances
-    that extract strings from a given doc sequentially.
     """
 
 class TokType:
@@ -180,3 +182,49 @@ class Constant(TokType):
 
 class Declaration(TokType):
     pass
+
+class Name(TokType):
+    pass
+
+class Attribute(TokType):
+    pass
+
+class Builtin(TokType):
+    pass
+
+class Class(TokType):
+    pass
+
+class Class(TokType):
+    pass
+
+class Function(TokType):
+    pass
+
+class Variable(TokType):
+    pass
+
+class Backtick(TokType):
+    pass
+
+class Doc(TokType):
+    pass
+
+class Escape(TokType):
+    pass
+
+class String(TokType):
+    pass
+
+class Regex(TokType):
+    pass
+
+class Symbol(TokType):
+    pass
+
+class Integer(TokType):
+    pass
+
+class Hex(TokType):
+    pass
+

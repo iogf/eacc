@@ -8,7 +8,7 @@ from yacc.token import Token, Blank, Word, TokVal, Sof, Eof
 class WordTokens(XSpec):
     lexmap  = LexMap()
     t_word  = LexNode(r'[a-zA-Z]+', Word)
-    t_blank = LexNode(r' +', type=Blank)
+    t_blank = LexNode(r' +', type=Blank, discard=True)
 
     lexmap.add(t_word, t_blank)
     root = [lexmap]
@@ -21,9 +21,7 @@ class WordGrammar(Grammar):
     r_eof      = Rule(Eof)
 
     struct.add(r_phrase1, r_phrase0, r_sof, r_eof)
-
     root = [struct]
-    discard = [Blank]
 
 data = 'alpha beta gamma zeta' 
 lexer = Lexer(WordTokens)

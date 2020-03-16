@@ -14,7 +14,7 @@ class CalcTokens(XSpec):
     t_div    = LexNode(r'\/', Div)
 
     t_num    = LexNode(r'[0-9]+', Num, float)
-    t_blank  = LexNode(r' +', Blank)
+    t_blank  = LexNode(r' +', Blank, discard=True)
 
     expression.add(t_plus, t_minus, t_lparen, t_num, 
     t_blank, t_rparen, t_mul, t_div)

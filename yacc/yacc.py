@@ -187,30 +187,13 @@ class Grouper:
 class Yacc:
     def __init__(self, grammar):
         self.root = grammar.root
-        self.discard = grammar.discard
 
-    def is_discarded(self, token):
-        for indi in self.discard:
-            if indi.istype(token):
-                return True
-        return False
-
-    def remove_tokens(self, tokens):
-        """
-        """
-        for indi in tokens:
-            if not self.is_discarded(indi):
-                yield indi
-
-    def build(self, tokens):
+    def build(self, data):
         """
         """
 
-        data = self.remove_tokens(tokens)
-        data = list(data)
         tokens = Grouper()
         tokens.expand(data)
-
         ptree = self.process(tokens)
         yield from ptree
 

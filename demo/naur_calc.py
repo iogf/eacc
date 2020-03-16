@@ -14,7 +14,7 @@ class CalcTokens(XSpec):
     t_div    = LexNode(r'\/', Div)
 
     t_num    = LexNode(r'[0-9]+', Num, float)
-    t_blank  = LexNode(r' +', Blank)
+    t_blank  = LexNode(r' +', Blank, discard=True)
 
     expression.add(t_plus, t_minus, t_lparen, t_num, 
     t_blank, t_rparen, t_mul, t_div)
@@ -30,15 +30,19 @@ class CalcGrammar(Grammar):
     o_div   = Rule(Div)
     o_mul   = Rule(Mul)
 
-    r_plus  = Rule(expression, Plus, expression, type=expression, up=(o_mul, o_div))
-    r_minus = Rule(expression, Minus, expression, type=expression, up=(o_mul, o_div))
+    r_plus  = Rule(expression, Plus, expression, 
+    type=expression, up=(o_mul, o_div))
+
+    r_minus = Rule(expression, Minus, expression, 
+    type=expression, up=(o_mul, o_div))
+
     r_num = Rule(Num, type=expression)
 
     r_done  = Rule(Sof, expression, Eof)
-    expression.add(r_paren, r_plus, r_minus, r_mul, r_div, r_num, r_done)
+    expression.add(r_paren, r_plus, r_minus, 
+    r_mul, r_div, r_num, r_done)
 
     root    = [expression]
-    discard = [Blank]
 
 def plus(expr, sign, term):
     return expr.val() + term.val()

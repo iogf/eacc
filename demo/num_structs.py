@@ -10,7 +10,7 @@ class NumTokens(XSpec):
     t_num = LexNode(r'[1-9]+', type=TokVal)
     t_plus = LexNode(r'\+', type=TokVal)
 
-    t_blank = LexNode(r' +', type=Blank)
+    t_blank = LexNode(r' +', type=Blank, discard=True)
     lexmap.add(t_num, t_plus, t_blank)
 
     root = [lexmap]
@@ -27,7 +27,6 @@ class NumGrammar(Grammar):
     type1.add(r_type1, r_end)
 
     root = [type0, type1]
-    discard = [Blank]
 
 data = '1 + 2 + 2'
 lexer = Lexer(NumTokens)
