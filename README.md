@@ -187,7 +187,8 @@ expression : expression PLUS expression
 The parser has a lookahead mechanism based on rules as well.
 
 ~~~python
-    r_plus  = Rule(Num, Plus, Num, type=Num, up=(o_mul, o_div))
+    r_plus  = Rule(expression, Plus, expression, 
+    type=expression, up=(o_mul, o_div))
 ~~~
 
 The above rule will be matched only if the below rules aren't matched ahead.
@@ -196,6 +197,9 @@ The above rule will be matched only if the below rules aren't matched ahead.
     o_div   = Rule(Div)
     o_mul   = Rule(Mul)
 ~~~
+
+In case the above rule is matched then the result has type expression it will be rematched
+against the existing rules and so on.
 
 When a mathematical expression is well formed it will result to the following structure.
 
@@ -220,6 +224,120 @@ def done(sof, expression, eof):
 In case it is not a valid mathematical expression then it raises an exception. 
 When a given document is well formed, the defined rules will consume it entirely.
 
+It is also possible to use the optmal grammar specification below:
+
+~~~python
+class CalcGrammar(Grammar):
+    expression = Struct()
+
+    r_paren = Rule(LP, Num, RP, type=Num)
+    r_div   = Rule(Num, Div, Num, type=Num)
+    r_mul   = Rule(Num, Mul, Num, type=Num)
+    o_div   = Rule(Div)
+    o_mul   = Rule(Mul)
+
+    r_plus  = Rule(Num, Plus, Num, type=Num, up=(o_mul, o_div))
+    r_minus = Rule(Num, Minus, Num, type=Num, up=(o_mul, o_div))
+    r_done  = Rule(Sof, Num, Eof)
+
+    expression.add(r_paren, r_plus, r_minus, r_mul, r_div, r_done)
+    root = [expression]
+~~~
+
+That basically means that when two mathematical operations can be performed then
+the result is also a Num. In the above example the resulting structure would be.
+
+~~~
+Sof Num Sof
+~~~
+
+### Lexer
+
+The lexer is really powerful it can handle some interesting cases in a short and simple manner.
+
+~~~python
+from yacc.lexer import XSpec, Lexer, LexMap, SeqNode, LexNode, LexSeq
+from yacc.token import Token, Keyword, Identifier, RP, LP, Colon, Blank
+
+class KeywordTokens(XSpec):
+    lexmap = LexMap()
+    t_if = LexSeq(SeqNode(r'if', type=Keyword),
+    SeqNode(r'\s+', type=Blank))
+
+    t_blank  = LexNode(r' +', type=Blank)
+    t_lparen = LexNode(r'\(', type=LP)
+    t_rparen = LexNode(r'\)', type=RP)
+    t_colon  = LexNode(r'\:', type=Colon)
+
+    # Match identifier only if it is not an if.
+    t_identifier = LexNode(r'[a-zA-Z0-9]+', type=Identifier)
+
+    lexmap.add(t_if, t_blank, t_lparen, 
+    t_rparen, t_colon, t_identifier)
+    root = [lexmap]
+
+lex = Lexer(KeywordTokens)
+data = 'if ifnum: foobar()'
+tokens = lex.feed(data)
+print('Consumed:', list(tokens))
+~~~
+
+That would output:
+
+~~~
+Consumed: [Sof(''), Keyword('if'), Blank(' '), Identifier('ifnum'), Colon(':'),
+Blank(' '), Identifier('foobar'), LP('('), RP(')'), Eof('')]
+~~~
+
+The above example handles the task of tokenizing keywords correctly. The SeqNode class works together with
+LexSeq to extract the tokens based on a given regex while LexNode works on its own to extract tokens that
+do not demand a lookahead step.
+
+The yacc lexer allows you to use also a similar Backus-Naur notation on Python classes to validate the
+structure of documents in the lexical step.
+
+~~~python
+from yacc.lexer import Lexer, LexMap, SeqNode, LexLink, LexSeq, LexNode, XSpec
+from yacc.token import Num, LP, RP, Blank, Comma
+
+class TupleTokens(XSpec):
+    lexmap  = LexMap()
+    t_paren = LexSeq(SeqNode(r'\(', LP), 
+    LexLink(lexmap), SeqNode(r'\)', RP))
+
+    t_elem  = LexSeq(SeqNode(r',', Comma), LexLink(lexmap))
+    t_num   = LexNode(r'[0-9]+', Num)
+    t_blank = LexNode(r' +', Blank)
+
+    lexmap.add(t_paren, t_elem, t_num, t_blank)
+    root = [lexmap]
+
+print('Example 1')
+lex = Lexer(TupleTokens)
+data = '(1, 2, 3, 1, 2, (3)))'
+tokens = lex.feed(data)
+print('Consumed:', list(tokens))
+~~~
+
+The previous example would generate a lexical error due to the tuple being bad formed.
+
+~~~
+yacc.lexer.LexError: Unexpected token: ')'
+~~~
+
+That code structure corresponds basically to:
+
+~~~
+lexmap : (lexmap) |
+         ,lexmap  |
+         Num
+~~~
+
+Where lexmap obviously corresponds to the definition of a tuple.
+
+The lexer approach allows you to create multiple LexMap instances and combine them
+with a LexSeq instance. It permits one to tokenize and validate more complex structures in a reasonable
+and simplistic way.
 The idea behind yacc arouse when i was working to abstract a set of existing tools to improve 
 
 https://github.com/vyapp/vy
