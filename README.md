@@ -102,7 +102,7 @@ class CalcGrammar(Grammar):
 
     # When a math expression is fully evaluated it will result
     # in the below pattern. This rule is used to consume the resulting
-    # structure. Sof stands for stard of file. 
+    # structure. Sof stands for start of file. 
     #
     # The resulting structure will contain the math expression
     # value.
