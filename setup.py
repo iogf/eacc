@@ -1,7 +1,7 @@
 
 from distutils.core import setup
 setup(name="yacc",
-      version="0.0.1",
+      version="1.0.0",
       packages=["yacc", ],
       author="Iury O. G. Figueiredo",
       author_email="last.src@gmail.com",
