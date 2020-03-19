@@ -1,53 +1,33 @@
 """
 """
 
-from yacc.lexer import Lexer, LexMap, LexNode, XSpec
-from yacc.yacc import Grammar, Rule, Group, Yacc, Struct
-from yacc.token import Token, Blank, Num, Sof, Eof, LP, RP
+from yacc.lexer import Lexer, LexSeq, SeqNode, R, LexMap, LexNode, XSpec
+from yacc.token import Token, Blank, Num, Sof, Eof, LP, RP, RB, LB
 
 class TupleTokens(XSpec):
-    lex_tuple = LexMap()
-    r_lparen = LexNode(r'\(', LP)
-    r_rparen = LexNode(r'\)', RP)
+    lex_tuple  = LexMap()
+    lex_list  = LexMap()
 
-    r_num    = LexNode(r'[0-9]+', Num)
-    r_blank  = LexNode(r' +', Blank, discard=True)
+    t_paren = LexSeq(SeqNode(r'\(', LP), 
+    R(lex_tuple, 0), SeqNode(r'\)', RP))
 
-    lex_tuple.add(r_lparen, r_rparen, r_num, r_blank)
+    t_bracket = LexSeq(SeqNode(r'\[', LB), 
+    R(lex_list, 0), SeqNode(r'\]', RB))
 
-    lex_tuple = LexMap()
-    r_lparen = LexNode(r'\[', LP)
-    r_rparen = LexNode(r'\]', RP)
+    t_blank = LexNode(r' +', Blank)
+    t_elem  = LexNode(r'[0-9]+', Num)
 
-    r_num    = LexNode(r'[0-9]+', Num)
-    r_blank  = LexNode(r' +', Blank, discard=True)
+    lex_tuple.add(t_paren, t_bracket, t_elem, t_blank)
 
-    lex_tuple.add(r_lparen, r_rparen, r_num, r_blank)
+    t_bracket = LexSeq(SeqNode(r'\[', LB),
+    R(lex_list, 0), SeqNode(r'\]', RB))
 
-    root = [lexmap]
+    lex_list.add(t_bracket, t_elem, t_blank)
 
-class TupleGrammar(Grammar):
-    struct = Struct()
-
-    # It means to accumulate as many Num tokens as possible.
-    g_num = Group(Num, min=1)
-
-    # Then we trigge such a pattern in this rule.
-    r_paren = Rule(LP, g_num, RP, type=Num)
-    r_done  = Rule(Sof, Num, Eof)
-
-    struct.add(r_paren, r_done)
-    root = [struct]
-
-def done(sof, expr, eof):
-    print('Result:', expr)
+    root = [lex_tuple]
 
 print('Example 1')
 lexer  = Lexer(TupleTokens)
-yacc   = Yacc(TupleGrammar)
-yacc.add_handle(TupleGrammar.r_done, done)
-
-data   = '(1 (2 3) 4 (5 (6) 7))'
+data = '((1 2) ([3 [1] 4] ([1 [1] 2]) 2))'
 tokens = lexer.feed(data)
-ptree  = yacc.build(tokens)
-ptree  = list(ptree)
+print('Consumed:', list(tokens))

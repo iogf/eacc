@@ -2,7 +2,7 @@
 """
 
 from yacc.lexer import Lexer, LexMap, LexNode, XSpec
-from yacc.yacc import Grammar, Rule, Group, Yacc, Struct
+from yacc.yacc import Grammar, Rule, T, Yacc, Struct
 from yacc.token import Token, Blank, Num, Sof, Eof, LP, RP
 
 class TupleTokens(XSpec):
@@ -20,7 +20,7 @@ class TupleGrammar(Grammar):
     struct = Struct()
 
     # It means to accumulate as many Num tokens as possible.
-    g_num = Group(Num, min=1)
+    g_num = T(Num, min=1)
 
     # Then we trigge such a pattern in this rule.
     r_paren = Rule(LP, g_num, RP, type=Num)

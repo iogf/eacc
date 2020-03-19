@@ -278,8 +278,8 @@ class Rule(XNode):
 
         self.up.extend(up)
 
-class Group(XNode):
-    def __init__(self, token, min=1, max=None):
+class T(XNode):
+    def __init__(self, token, min=1, max=9999999999999):
         self.token = token
         self.min = min
 
@@ -291,10 +291,7 @@ class Group(XNode):
             token = self.token.validate(slc)
             if token:
                 ptree.append(token)
-            elif self.max and self.min <= len(ptree) < self.max:
-                slc.lshift()
-                return ptree
-            elif not self.max and self.min <= len(ptree):
+            elif self.min <= len(ptree) < self.max:
                 slc.lshift()
                 return ptree
             else:
