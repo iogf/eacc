@@ -2,13 +2,13 @@
 """
 
 from yacc.lexer import Lexer, LexMap, LexSeq, LexNode, SeqNode, XSpec
-from yacc.token import DoubleQuote, TokVal, Blank
+from yacc.token import DoubleQuote, String, Blank
 
 class StringTokens(XSpec):
     lexmap = LexMap()
 
     t_dquote = LexSeq(SeqNode(r'\"', DoubleQuote),
-    SeqNode(r'[^\"]+', TokVal), SeqNode(r'\"', DoubleQuote))
+    SeqNode(r'[^\"]+', String), SeqNode(r'\"', DoubleQuote))
 
     t_blank = LexNode(r' +', type=Blank)
     lexmap.add(t_dquote, t_blank)

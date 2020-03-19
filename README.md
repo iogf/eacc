@@ -297,30 +297,31 @@ The yacc lexer allows you to use also a similar Backus-Naur notation on Python c
 structure of documents in the lexical step.
 
 ~~~python
-from yacc.lexer import Lexer, LexMap, SeqNode, LexLink, LexSeq, LexNode, XSpec
+from yacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
 from yacc.token import Num, LP, RP, Blank, Comma
 
 class TupleTokens(XSpec):
     lexmap  = LexMap()
     t_paren = LexSeq(SeqNode(r'\(', LP), 
-    LexLink(lexmap), SeqNode(r'\)', RP))
+    R(lexmap, 0), SeqNode(r'\)', RP))
 
-    t_elem  = LexSeq(SeqNode(r',', Comma), LexLink(lexmap))
-    t_num   = LexNode(r'[0-9]+', Num)
     t_blank = LexNode(r' +', Blank)
 
-    lexmap.add(t_paren, t_elem, t_num, t_blank)
+    t_elem  = LexNode(r'[0-9]+', Num)
+
+    lexmap.add(t_paren, t_elem, t_blank)
     root = [lexmap]
 
 print('Example 1')
 lex = Lexer(TupleTokens)
-data = '(1, 2, 3, 1, 2, (3)))'
+data = '(1 1 2) (1 2))'
 tokens = lex.feed(data)
 print('Consumed:', list(tokens))
+
 ~~~
 
 The previous example would generate a lexical error due to the tuple being bad formed.
-
+The R class means Repeat.
 ~~~
 yacc.lexer.LexError: Unexpected token: ')'
 ~~~
@@ -329,8 +330,8 @@ That code structure corresponds basically to:
 
 ~~~
 lexmap : (lexmap) |
-         ,lexmap  |
-         Num
+         Num |
+         Blank
 ~~~
 
 Where lexmap obviously corresponds to the definition of a tuple.

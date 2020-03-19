@@ -69,9 +69,16 @@ class LexMap(XNode):
     def __repr__(self):
         return 'LexMap(%s)' % self.children
 
-class LexLink(XNode):
-    def __init__(self, lex):
+class R(XNode):
+    def __init__(self, lex, min=1, max=9999999999999):
+        """
+        R stands for Repeat. It makes sure a given lexical
+        condition happens n times where min < n < max or min < n.
+        """
+
         self.lex = lex
+        self.min = min
+        self.max = max
 
     def consume(self, data, pos):
         tseq = TSeq()
@@ -79,8 +86,10 @@ class LexLink(XNode):
             token = self.lex.consume(data, pos)
             if token:
                 tseq.extend(token)
-            else:
+            elif self.min <= len(tseq) < self.max:
                 break
+            else:
+                return None
             pos = token[-1].end
         return tseq
 
@@ -122,7 +131,7 @@ class LexSeq(XNode):
         tseq = TSeq()
         for ind in self.args:
             token = ind.consume(data, pos)
-            if token:
+            if token != None:
                 tseq.extend(token)
             else:
                 return None
