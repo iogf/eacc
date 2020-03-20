@@ -228,3 +228,12 @@ class Integer(TokType):
 class Hex(TokType):
     pass
 
+class Caret(TokType):
+    pass
+
+class Dot(TokType):
+    pass
+
+class Dollar(TokType):
+    pass
+
