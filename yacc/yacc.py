@@ -1,5 +1,4 @@
-from yacc.token import *
-from collections.abc import Iterable
+from yacc.token import PTree, XNode
 
 class YaccError(Exception):
     pass
