@@ -121,15 +121,27 @@ class Comma(TokType):
     pass
 
 class LB(TokType):
+    """
+    Left bracket.
+    """
     pass
 
 class RB(TokType):
+    """
+    Right bracket.
+    """
     pass
 
-class LSB(TokType):
+class LBR(TokType):
+    """
+    Left brace.
+    """
     pass
 
-class RSB(TokType):
+class RBR(TokType):
+    """    
+    Right brace.
+    """
     pass
 
 class Word(TokType):
@@ -237,3 +249,8 @@ class Dot(TokType):
 class Dollar(TokType):
     pass
 
+class Stick(TokType):
+    pass
+
+class Semicolon(TokType):
+    pass

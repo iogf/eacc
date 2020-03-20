@@ -224,7 +224,7 @@ def done(sof, expression, eof):
 In case it is not a valid mathematical expression then it raises an exception. 
 When a given document is well formed, the defined rules will consume it entirely.
 
-It is also possible to use the optmal grammar specification below:
+It is also possible to use the optimal grammar specification below:
 
 ~~~python
 class CalcGrammar(Grammar):
