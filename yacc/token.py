@@ -254,3 +254,16 @@ class Stick(TokType):
 
 class Semicolon(TokType):
     pass
+
+class Equal(TokType):
+    pass
+
+class Equal(TokType):
+    pass
+
+class Hash(TokType):
+    pass
+
+class Exclam(TokType):
+    pass
+
