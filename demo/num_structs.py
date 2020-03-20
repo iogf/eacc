@@ -3,12 +3,12 @@
 
 from yacc.yacc import Yacc,  Rule, Grammar, Struct
 from yacc.lexer import XSpec, Lexer, LexMap, LexNode, TokVal
-from yacc.token import Token, Blank, Eof, Sof
+from yacc.token import Token, Blank, Eof, Sof, Num, Plus, Blank
 
 class NumTokens(XSpec):
     lexmap  = LexMap()
-    t_num = LexNode(r'[1-9]+', type=TokVal)
-    t_plus = LexNode(r'\+', type=TokVal)
+    t_num = LexNode(r'[1-9]+', type=Num)
+    t_plus = LexNode(r'\+', type=Plus)
 
     t_blank = LexNode(r' +', type=Blank, discard=True)
     lexmap.add(t_num, t_plus, t_blank)

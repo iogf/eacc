@@ -1,6 +1,3 @@
-"""
-"""
-
 from yacc.lexer import Lexer, LexMap, LexNode, XSpec
 from yacc.yacc import Grammar, Rule, T, Yacc, Struct
 from yacc.token import Token, Blank, Num, Sof, Eof, LP, RP

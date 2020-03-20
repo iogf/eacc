@@ -19,9 +19,6 @@ class TupleTokens(XSpec):
 
     lex_tuple.add(t_paren, t_bracket, t_elem, t_blank)
 
-    t_bracket = LexSeq(SeqNode(r'\[', LB),
-    R(lex_list, 0), SeqNode(r'\]', RB))
-
     lex_list.add(t_bracket, t_elem, t_blank)
 
     root = [lex_tuple]
