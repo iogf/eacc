@@ -258,9 +258,6 @@ class Semicolon(TokType):
 class Equal(TokType):
     pass
 
-class Equal(TokType):
-    pass
-
 class Hash(TokType):
     pass
 
