@@ -1,4 +1,4 @@
-from yacc.token import PTree, XNode
+from yacc.token import PTree, XNode, Sof, Eof, Token
 
 class YaccError(Exception):
     pass
@@ -187,17 +187,24 @@ class Yacc:
     def __init__(self, grammar):
         self.root = grammar.root
 
-    def build(self, data):
+    def build(self, tseq, sub=False):
         """
         """
+        if sub:
+            tseq = self.add_se(tseq)
 
         tokens = Grouper()
-        tokens.expand(data)
+        tokens.expand(tseq)
         ptree = self.process(tokens)
         yield from ptree
 
         if not tokens.linked.empty():
             self.handle_error(tokens)
+
+    def add_se(self, tseq):
+        yield Token('', Sof)
+        yield from tseq
+        yield Token('', Eof)
 
     def process(self, tokens):
         while True:
