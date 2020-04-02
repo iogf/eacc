@@ -88,16 +88,18 @@ class R(XNode):
         return self.lex.is_rulemap()
 
     def consume(self, data, pos, exclude=()):
-        tseq = TSeq()
+        tseq  = TSeq()
+        count = 0
         while True:
             token = self.lex.consume(data, pos, exclude)
             if token:
                 tseq.extend(token)
-            elif self.min <= len(tseq) < self.max:
+            elif self.min <= count < self.max:
                 break
             else:
                 return None
             pos = token[-1].end
+            count += 1
         return tseq
 
 class LexNode(XNode):
