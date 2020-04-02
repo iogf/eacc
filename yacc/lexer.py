@@ -120,20 +120,16 @@ class LexNode(XNode):
     def consume(self, data, pos, exclude=()):
         regobj = self.match(data, pos)
         if regobj:
-            return self.mktoken(regobj)
-
-    def mktoken(self, regobj):
-        token = Token(regobj.group(), self.type, 
-        self.cast, regobj.start(), regobj.end(), self.discard)
-        return TSeq((token,))
-
+            return TSeq((Token(regobj.group(), self.type, 
+                self.cast, regobj.start(), regobj.end(), self.discard), ))
+    
     def __repr__(self):
         return 'SeqNode(%s(%s))' % (
             self.type.__name__, repr(self.regstr))
 
 class SeqNode(LexNode):
-    def __init__(self, regstr, type=TokVal, cast=None):
-        super(SeqNode, self).__init__(regstr, type, cast)
+    def __init__(self, regstr, type=TokVal, cast=None, discard=False):
+        super(SeqNode, self).__init__(regstr, type, cast, discard)
 
     def is_rulemap(self):
         return False
