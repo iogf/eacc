@@ -8,7 +8,7 @@ Thus the string below would give a lexical error.
 """
 
 from yacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
-from yacc.token import Num, LB, RB, Blank, Comma
+from yacc.token import Num, Blank
 
 class ArgsTokens(XSpec):
     lexmap  = LexMap()

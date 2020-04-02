@@ -2,7 +2,7 @@
 """
 
 from yacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
-from yacc.token import Num, LP, RP, Blank, Comma
+from yacc.token import Num, LP, RP, Blank
 
 class TupleTokens(XSpec):
     lexmap  = LexMap()
