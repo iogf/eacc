@@ -267,3 +267,5 @@ class Hash(TokType):
 class Exclam(TokType):
     pass
 
+class Letter(TokType):
+    pass

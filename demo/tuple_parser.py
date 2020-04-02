@@ -1,6 +1,6 @@
 from yacc.lexer import Lexer, LexMap, LexNode, XSpec
 from yacc.yacc import Grammar, Rule, T, Yacc, Struct
-from yacc.token import Token, Blank, Num, Sof, Eof, LP, RP
+from yacc.token import Blank, Num, Sof, Eof, LP, RP
 
 class TupleTokens(XSpec):
     lexmap = LexMap()

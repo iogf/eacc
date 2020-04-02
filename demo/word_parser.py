@@ -3,7 +3,7 @@
 
 from yacc.yacc import Yacc, Rule, Grammar, Struct
 from yacc.lexer import XSpec, Lexer, LexMap, LexNode
-from yacc.token import Token, Blank, Word, TokVal, Sof, Eof
+from yacc.token import Blank, Word, TokVal, Sof, Eof
 
 class WordTokens(XSpec):
     lexmap  = LexMap()

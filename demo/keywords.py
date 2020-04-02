@@ -2,7 +2,7 @@
 """
 
 from yacc.lexer import XSpec, Lexer, LexMap, SeqNode, LexNode, LexSeq
-from yacc.token import Token, Keyword, Identifier, RP, LP, Colon, Blank
+from yacc.token import Keyword, Identifier, RP, LP, Colon, Blank
 
 class KeywordTokens(XSpec):
     lexmap = LexMap()

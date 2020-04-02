@@ -10,7 +10,7 @@ Thus the string below would give a lexical error.
 from yacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
 from yacc.token import Num, Blank
 
-class ArgsTokens(XSpec):
+class NumsTokens(XSpec):
     lexmap  = LexMap()
     t_blank = LexNode(r' +', Blank)
     t_num   = SeqNode(r'[0-9]', Num)
@@ -21,7 +21,7 @@ class ArgsTokens(XSpec):
     root = [lexmap]
 
 print('Example 1')
-lex = Lexer(ArgsTokens)
+lex = Lexer(NumsTokens)
 data = '332 3445 11234'
 tokens = lex.feed(data)
 print('Consumed:', list(tokens))
