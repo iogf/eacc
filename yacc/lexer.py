@@ -1,6 +1,5 @@
 from yacc.token import *
 import re
-import time
 
 class LexError(Exception):
     pass
