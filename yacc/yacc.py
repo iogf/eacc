@@ -1,4 +1,4 @@
-from yacc.token import PTree, XNode, Sof, Eof, Token
+from yacc.token import PTree, Sof, Eof, Token
 
 class YaccError(Exception):
     pass
@@ -245,7 +245,7 @@ class Yacc:
         """
         rule.hmap = handle
 
-class Struct(XNode):
+class Struct:
     def __init__(self):
         super(Struct, self).__init__()
         self.rules = []
@@ -273,7 +273,7 @@ class Struct(XNode):
         """
         self.rules.extend(args)
 
-class Rule(XNode):
+class Rule:
     def __init__(self, *args, up=(), type=None):
         """
         """
@@ -284,7 +284,7 @@ class Rule(XNode):
 
         self.up.extend(up)
 
-class T(XNode):
+class T:
     def __init__(self, token, min=1, max=9999999999999):
         self.token = token
         self.min = min

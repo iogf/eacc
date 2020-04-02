@@ -10,7 +10,6 @@ class TupleTokens(XSpec):
     R(lexmap, 0), SeqNode(r'\)', RP))
 
     t_blank = LexNode(r' +', Blank)
-
     t_elem  = LexNode(r'[0-9]+', Num)
 
     lexmap.add(t_paren, t_elem, t_blank)

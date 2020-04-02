@@ -1,5 +1,6 @@
 from yacc.token import *
 import re
+import time
 
 class LexError(Exception):
     pass
@@ -58,13 +59,17 @@ class LexMap(XNode):
     def add(self, *args):
         self.children.extend(args)
 
-    def consume(self, data, pos):
+    def is_rulemap(self):
+        return True
+
+    def consume(self, data, pos, exclude=()):
         """
         """
         for ind in self.children:
-            tseq = ind.consume(data, pos)
-            if tseq:
-                return tseq
+            if not ind in exclude:
+                tseq = ind.consume(data, pos, exclude)
+                if tseq:
+                    return tseq
 
     def __repr__(self):
         return 'LexMap(%s)' % self.children
@@ -80,10 +85,13 @@ class R(XNode):
         self.min = min
         self.max = max
 
-    def consume(self, data, pos):
+    def is_rulemap(self):
+        return self.lex.is_rulemap()
+
+    def consume(self, data, pos, exclude=()):
         tseq = TSeq()
         while True:
-            token = self.lex.consume(data, pos)
+            token = self.lex.consume(data, pos, exclude)
             if token:
                 tseq.extend(token)
             elif self.min <= len(tseq) < self.max:
@@ -105,7 +113,10 @@ class LexNode(XNode):
         self.match  = self.regex.match
         self.discard = discard
 
-    def consume(self, data, pos):
+    def is_rulemap(self):
+        return False
+
+    def consume(self, data, pos, exclude=()):
         regobj = self.match(data, pos)
         if regobj:
             return self.mktoken(regobj)
@@ -123,19 +134,33 @@ class SeqNode(LexNode):
     def __init__(self, regstr, type=TokVal, cast=None):
         super(SeqNode, self).__init__(regstr, type, cast)
 
+    def is_rulemap(self):
+        return False
+
 class LexSeq(XNode):
     def __init__(self, *args):
         self.args = args
 
-    def consume(self, data, pos):
-        tseq = TSeq()
-        for ind in self.args:
-            token = ind.consume(data, pos)
+    def fix_exclusion(self, exclude, index):
+        if not index or self.args[index - 1].is_rulemap():
+            return exclude + (self, )
+        else:
+            return ()
+
+    def is_rulemap(self):
+        return False
+    
+    def consume(self, data, pos, exclude=()):
+        tseq  = TSeq()
+        for ind in range(0, len(self.args)):
+            token = self.args[ind].consume(data, 
+            pos, self.fix_exclusion(exclude, ind))
             if token != None:
                 tseq.extend(token)
             else:
                 return None
-            pos = tseq[-1].end
+            if tseq:
+                pos = tseq[-1].end
         return tseq
 
     def __repr__(self):
