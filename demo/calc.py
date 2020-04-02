@@ -4,7 +4,10 @@ from yacc.lexer import Lexer, LexMap, LexNode, XSpec
 from yacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
 
 class CalcTokens(XSpec):
+    # The set of tokens that is used in the grammar.
     expression = LexMap()
+
+    # Used to extract the tokens.
     t_plus   = LexNode(r'\+', Plus)
     t_minus  = LexNode(r'\-', Minus)
 
@@ -22,8 +25,11 @@ class CalcTokens(XSpec):
     root = [expression]
 
 class CalcGrammar(Grammar):
+    # The grammar struct.
     expression = Struct()
 
+    # The token patterns when matched them become
+    # ParseTree objects which have a type.
     r_paren = Rule(LP, Num, RP, type=Num)
     r_div   = Rule(Num, Div, Num, type=Num)
     r_mul   = Rule(Num, Mul, Num, type=Num)
@@ -32,11 +38,15 @@ class CalcGrammar(Grammar):
 
     r_plus  = Rule(Num, Plus, Num, type=Num, up=(o_mul, o_div))
     r_minus = Rule(Num, Minus, Num, type=Num, up=(o_mul, o_div))
+
+    # The final structure that is consumed. Once it is
+    # consumed then the process stops.
     r_done  = Rule(Sof, Num, Eof)
 
     expression.add(r_paren, r_plus, r_minus, r_mul, r_div, r_done)
     root = [expression]
 
+# The handles mapped to the patterns to compute the expression result.
 def plus(expr, sign, term):
     return expr.val() + term.val()
 
@@ -61,6 +71,7 @@ lexer  = Lexer(CalcTokens)
 tokens = lexer.feed(data)
 yacc   = Yacc(CalcGrammar)
 
+# Link the handles to the patterns.
 yacc.add_handle(CalcGrammar.r_plus, plus)
 yacc.add_handle(CalcGrammar.r_minus, minus)
 yacc.add_handle(CalcGrammar.r_div, div)
