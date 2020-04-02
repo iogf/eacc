@@ -7,6 +7,6 @@ setup(name="yacc",
       author_email="last.src@gmail.com",
       url='https://github.com/dracs/yacc',
       download_url='https://github.com/dracs/yacc/releases',
-      keywords=[],
+      keywords=['yacc', 'parsing', 'lexer', 'parser'],
       classifiers=[],
       description="Yacc-like parsing tools.",)
