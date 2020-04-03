@@ -1,25 +1,17 @@
 # Eacc
 
-If it looks like a duck, swims like a duck, and quacks like a duck, then it probably is a duck.
+Python Eacc is a parsing tool it implements a flexible lexer and a straightforward approach
+to build AST's from documents. 
 
-Python Eacc is a parsing library with a powerful Backus-Naur variation. It implements a powerful lexer
-that can be used to validate documents. It also implements a parsing mechanism to build AST's for documents.
+Documents are split into tokens and a token has a type when a sequence of tokens is matched 
+it evaluates to a specific type then rematcned again against the existing rules. 
 
-The notation to express grammar consists of defining token patterns in a similar fashion to Backus-Naur.
-The similarity with Backus-Naur form is merely superficial because in eacc it is purely using python code
-to express the token patterns.
-
-A token has a type when a sequence of tokens is matched it evaluates to a specific type then rematcned
-again against the existing rules. When a given token pattern is trigged it is possible
-to attach a handle to be executed. The handle arguments are the tokens that were matched.
+When a given token pattern is trigged it is possible to attach a handle to be executed. 
+The handle arguments are the tokens that were matched.
 
 You can build more complex AST's using that approach with handles or you can just evaluate
 the AST's resulting from your grammar specification at the time it is being parsed. It works fairly
 well for simple grammars like basic mathematical expressions.
-
-Characterization plays a basic role in human reasoning. it is necessary
-to characterize first to reason. Knowing a duck is a duck it gives you the opportunity to trigger
-more complex patterns like when the duck is with chickens or wolves to take an action.
 
 The approach of defining types for basic structures of data then matching these against existing
 rules it automatically handles the powerful recursivity that exists in Backus-Naur notation 
@@ -29,15 +21,10 @@ The parser has a lookahead mechanism to express precedence when matching rules. 
 to implement parsers to handle document structures. The lookahead mechanism makes it possible
 to handle ambiguous grammar in a similar fashion to Backus-Naur in a succinct approach.
 
-### Parser
-
-The parser syntax is consistent and concrete. It allows you to link handles to token patterns and
-evaluate these rules according to your necessities.
-
 The approach of associating a token pattern to a type it makes possible to specify ambiguous
 grammar in a Backus-Naur form essentially.
 
-The below code specifies a lexer and a parsing approach for a simple expression calculator.
+The code below specifies a lexer and a parsing approach for a simple expression calculator.
 
 ~~~python
 
@@ -250,95 +237,6 @@ the result is also a Num. In the above example the resulting structure would be.
 ~~~
 Sof Num Sof
 ~~~
-
-### Lexer
-
-The lexer is really powerful it can handle some interesting cases in a short and simple manner.
-
-~~~python
-from eacc.lexer import XSpec, Lexer, LexMap, SeqNode, LexNode, LexSeq
-from eacc.token import Token, Keyword, Identifier, RP, LP, Colon, Blank
-
-class KeywordTokens(XSpec):
-    lexmap = LexMap()
-    t_if = LexSeq(SeqNode(r'if', type=Keyword),
-    SeqNode(r'\s+', type=Blank))
-
-    t_blank  = LexNode(r' +', type=Blank)
-    t_lparen = LexNode(r'\(', type=LP)
-    t_rparen = LexNode(r'\)', type=RP)
-    t_colon  = LexNode(r'\:', type=Colon)
-
-    # Match identifier only if it is not an if.
-    t_identifier = LexNode(r'[a-zA-Z0-9]+', type=Identifier)
-
-    lexmap.add(t_if, t_blank, t_lparen, 
-    t_rparen, t_colon, t_identifier)
-    root = [lexmap]
-
-lex = Lexer(KeywordTokens)
-data = 'if ifnum: foobar()'
-tokens = lex.feed(data)
-print('Consumed:', list(tokens))
-~~~
-
-That would output:
-
-~~~
-Consumed: [Sof(''), Keyword('if'), Blank(' '), Identifier('ifnum'), Colon(':'),
-Blank(' '), Identifier('foobar'), LP('('), RP(')'), Eof('')]
-~~~
-
-The above example handles the task of tokenizing keywords correctly. The SeqNode class works together with
-LexSeq to extract the tokens based on a given regex while LexNode works on its own to extract tokens that
-do not demand a lookahead step.
-
-The eacc lexer allows you to use also a similar Backus-Naur notation on Python classes to validate the
-structure of documents in the lexical step.
-
-~~~python
-from eacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
-from eacc.token import Num, LP, RP, Blank, Comma
-
-class TupleTokens(XSpec):
-    lexmap  = LexMap()
-    t_paren = LexSeq(SeqNode(r'\(', LP), 
-    R(lexmap, 0), SeqNode(r'\)', RP))
-
-    t_blank = LexNode(r' +', Blank)
-
-    t_elem  = LexNode(r'[0-9]+', Num)
-
-    lexmap.add(t_paren, t_elem, t_blank)
-    root = [lexmap]
-
-print('Example 1')
-lex = Lexer(TupleTokens)
-data = '(1 1 2) (1 2))'
-tokens = lex.feed(data)
-print('Consumed:', list(tokens))
-
-~~~
-
-The previous example would generate a lexical error due to the tuple being bad formed.
-The R class means Repeat.
-~~~
-eacc.lexer.LexError: Unexpected token: ')'
-~~~
-
-That code structure corresponds basically to:
-
-~~~
-lexmap : (lexmap) |
-         Num |
-         Blank
-~~~
-
-Where lexmap obviously corresponds to the definition of a tuple.
-
-The lexer approach allows you to create multiple LexMap instances and combine them
-with a LexSeq instance. It permits one to tokenize and validate more complex structures in a reasonable
-and simplistic way.
 
 # Install
 
