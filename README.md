@@ -22,49 +22,11 @@ to implement parsers to handle document structures. The lookahead mechanism make
 to handle ambiguous grammar in a similar fashion to Backus-Naur in a succinct approach.
 
 The code below specifies a lexer and a parsing approach for a simple expression calculator.
+When one of the mathematical operations +, -, * or / is executed then the result is a number
 
-Consider the rule below:
-
-    r0:a b c -> T
-
-Where a b and c are token types and T is a type associated to the pattern. When the pattern is 
-trigged it is associated to the type T. 
-
-Now consider there is also a rule.
-
-
-    r1: T m n c -> P
-
-When the rule above is trigged it is associated to the type P.
-
-Consider now the string below as being the document's token types.
-
-    a b c m n c
-
-It will first match the tokens below with r0.
-
-    a b c 
-
-Then it will look like.
-
-    T m n c
-
-Then it will match against r1. The resulting structure will be
-of type P. 
-
-The whole process gives you an AST like.
-
-    [[a, b, c], m, n, c]
-
-That simple approach can be used to build complex AST's for documents.
-
-That method is used below to implement a mathematical expression calculator. 
-In that context, when two numbers are summed or subtracted the result is also a number.
-
-Based on a simple assertion it is possible to implement our calculator.
+Based on such a simple assertion it is possible to implement our calculator. 
 
 ~~~python
-
 from eacc.eacc import Rule, Grammar, Struct, Eacc
 from eacc.lexer import Lexer, LexMap, LexNode, XSpec
 from eacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
@@ -73,73 +35,46 @@ class CalcTokens(XSpec):
     # The set of tokens that is used in the grammar.
     expression = LexMap()
 
-    # Token extractors. When it matches the regex's it instantiate
-    # a Token class with the specified type.
-    t_plus  = LexNode(r'\+', Plus)
-    t_minus = LexNode(r'\-', Minus)
+    # Used to extract the tokens.
+    t_plus   = LexNode(r'\+', Plus)
+    t_minus  = LexNode(r'\-', Minus)
 
     t_lparen = LexNode(r'\(', LP)
     t_rparen = LexNode(r'\)', RP)
     t_mul    = LexNode(r'\*', Mul)
     t_div    = LexNode(r'\/', Div)
 
-    # Automatically convert the token value to a float.
     t_num    = LexNode(r'[0-9]+', Num, float)
-
-    # White spaces are discarded.
     t_blank  = LexNode(r' +', Blank, discard=True)
 
     expression.add(t_plus, t_minus, t_lparen, t_num, 
     t_blank, t_rparen, t_mul, t_div)
 
-    # You can model your lexer with multiple LexMap
-    # instances and combine them with LexSeq it turns possible
-    # and easy to validate documents in the lexical step.
     root = [expression]
 
 class CalcGrammar(Grammar):
-    # A mathematical expression is a structure
-    # of data.
+    # The grammar struct.
     expression = Struct()
-    
-    # The rules to parse the structure.
-    r_paren = Rule(LP, expression, RP, type=expression)
-        
-    # The resulting parse tree will have type expression it will be
-    # rematched again against all the rules.
-    r_div   = Rule(expression, Div, expression, type=expression)
-    r_mul   = Rule(expression, Mul, expression, type=expression)
 
-    # The lookahead rules to fix ambiguity.
+    # The token patterns when matched them become
+    # ParseTree objects which have a type.
+    r_paren = Rule(LP, Num, RP, type=Num)
+    r_div   = Rule(Num, Div, Num, type=Num)
+    r_mul   = Rule(Num, Mul, Num, type=Num)
     o_div   = Rule(Div)
     o_mul   = Rule(Mul)
 
-    r_plus  = Rule(expression, Plus, expression, 
-    type=expression, up=(o_mul, o_div))
+    r_plus  = Rule(Num, Plus, Num, type=Num, up=(o_mul, o_div))
+    r_minus = Rule(Num, Minus, Num, type=Num, up=(o_mul, o_div))
 
-    r_minus = Rule(expression, Minus, expression, 
-    type=expression, up=(o_mul, o_div))
+    # The final structure that is consumed. Once it is
+    # consumed then the process stops.
+    r_done  = Rule(Sof, Num, Eof)
 
-    # When a Num is matched it is associated to the type
-    # expression then rematched against the previous rules
-    r_num = Rule(Num, type=expression)
-
-    # When a math expression is fully evaluated it will result
-    # in the below pattern. This rule is used to consume the resulting
-    # structure. Sof stands for start of file. 
-    #
-    # The resulting structure will contain the math expression
-    # value.
-    r_done  = Rule(Sof, expression, Eof)
-
-    expression.add(r_paren, r_plus, r_minus, 
-    r_mul, r_div, r_num, r_done)
-
-    # You can define multiple structures to simplify
-    # handling more complex grammars and combine them
-    # inside rules.
+    expression.add(r_paren, r_plus, r_minus, r_mul, r_div, r_done)
     root = [expression]
 
+# The handles mapped to the patterns to compute the expression result.
 def plus(expr, sign, term):
     return expr.val() + term.val()
 
@@ -155,64 +90,31 @@ def mul(term, sign, factor):
 def paren(left, expression, right):
     return expression.val()
 
-def num(num):
-    """
-    The result will be a ParseTree instance with type
-    expression and value equal to the token num.
-    """
+def done(sof, num, eof):
+    print('Result:', num.val())
     return num.val()
 
-def done(sof, expression, eof):
-    """
-    When this pattern is trigged then the expression is
-    fully evaluated. 
-    """
-    print('Result:', expression.val())
-    return expression.val()
-
-
-data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
+data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))' 
 lexer  = Lexer(CalcTokens)
 tokens = lexer.feed(data)
 eacc   = Eacc(CalcGrammar)
 
-# Map the patterns to handles to evaluate the expression.
+# Link the handles to the patterns.
 eacc.add_handle(CalcGrammar.r_plus, plus)
 eacc.add_handle(CalcGrammar.r_minus, minus)
 eacc.add_handle(CalcGrammar.r_div, div)
 eacc.add_handle(CalcGrammar.r_mul, mul)
 eacc.add_handle(CalcGrammar.r_paren, paren)
 eacc.add_handle(CalcGrammar.r_done, done)
-eacc.add_handle(CalcGrammar.r_num, num)
 
-# Finally build the AST.
 ptree = eacc.build(tokens)
 ptree = list(ptree)
-~~~
-
-That would give you:
-
-~~~
-[tau@archlinux demo]$ python calc.py 
-Result: 24.612244897959183
-~~~
-
-That is basically.
-
-~~~
-expression : expression PLUS expression
-            | expression MINUS expression
-            | expression TIMES expression
-            | expression DIVIDE expression
-            | LPAREN expression RPAREN
-            | NUMBER
 ~~~
 
 The parser has a lookahead mechanism based on rules as well.
 
 ~~~python
-    r_plus  = Rule(expression, Plus, expression, 
-    type=expression, up=(o_mul, o_div))
+    r_plus  = Rule(Num, Plus, Num, type=Num, up=(o_mul, o_div))
 ~~~
 
 The above rule will be matched only if the below rules aren't matched ahead.
@@ -222,58 +124,34 @@ The above rule will be matched only if the below rules aren't matched ahead.
     o_mul   = Rule(Mul)
 ~~~
 
-In case the above rule is matched then the result has type expression it will be rematched
+In case the above rule is matched then the result has type Num it will be rematched
 against the existing rules and so on.
 
 When a mathematical expression is well formed it will result to the following structure.
 
 ~~~
-Sof expression Eof
+Sof Num Eof
 ~~~
 
 Which is matched by the rule below.
 
 ~~~python
-    r_done  = Rule(Sof, expression, Eof)
+    r_done  = Rule(Sof, Num, Eof)
 ~~~
 
-That is mapped to the handle below. It will merely print the resulting value.
+That rule is mapped to the handle below. It will merely print the resulting value.
 
 ~~~python
-def done(sof, expression, eof):
-    print('Result:', expression.val())
-    return expression.val()
+def done(sof, num, eof):
+    print('Result:', num.val())
+    return num.val()
 ~~~
+
+The Sof and Eof are start of file and end of file tokens. These are automatically inserted
+by the lexer.
 
 In case it is not a valid mathematical expression then it raises an exception. 
 When a given document is well formed, the defined rules will consume it entirely.
-
-It is also possible to use the optimal grammar specification below:
-
-~~~python
-class CalcGrammar(Grammar):
-    expression = Struct()
-
-    r_paren = Rule(LP, Num, RP, type=Num)
-    r_div   = Rule(Num, Div, Num, type=Num)
-    r_mul   = Rule(Num, Mul, Num, type=Num)
-    o_div   = Rule(Div)
-    o_mul   = Rule(Mul)
-
-    r_plus  = Rule(Num, Plus, Num, type=Num, up=(o_mul, o_div))
-    r_minus = Rule(Num, Minus, Num, type=Num, up=(o_mul, o_div))
-    r_done  = Rule(Sof, Num, Eof)
-
-    expression.add(r_paren, r_plus, r_minus, r_mul, r_div, r_done)
-    root = [expression]
-~~~
-
-That basically means that when two mathematical operations can be performed then
-the result is also a Num. In the above example the resulting structure would be.
-
-~~~
-Sof Num Sof
-~~~
 
 # Install
 
