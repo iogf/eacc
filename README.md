@@ -21,10 +21,47 @@ The parser has a lookahead mechanism to express precedence when matching rules. 
 to implement parsers to handle document structures. The lookahead mechanism makes it possible
 to handle ambiguous grammar in a similar fashion to Backus-Naur in a succinct approach.
 
-The approach of associating a token pattern to a type it makes possible to specify ambiguous
-grammar in a Backus-Naur form essentially.
-
 The code below specifies a lexer and a parsing approach for a simple expression calculator.
+
+Consider the rule below:
+
+    r0:a b c -> T
+
+Where a b and c are token types and T is a type associated to the pattern. When the pattern is 
+trigged it is associated to the type T. 
+
+Now consider there is also a rule.
+
+
+    r1: T m n c -> P
+
+When the rule above is trigged it is associated to the type P.
+
+Consider now the string below as being the document's token types.
+
+    a b c m n c
+
+It will first match the tokens below with r0.
+
+    a b c 
+
+Then it will look like.
+
+    T m n c
+
+Then it will match against r1. The resulting structure will be
+of type P. 
+
+The whole process gives you an AST like.
+
+    [[a, b, c], m, n, c]
+
+That simple approach can be used to build complex AST's for documents.
+
+That method is used below to implement a mathematical expression calculator. 
+In that context, when two numbers are summed or subtracted the result is also a number.
+
+Based on a simple assertion it is possible to implement our calculator.
 
 ~~~python
 
