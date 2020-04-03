@@ -29,7 +29,7 @@ The parser has a lookahead mechanism to express precedence when matching rules. 
 to implement parsers to handle document structures. The lookahead mechanism makes it possible
 to handle ambiguous grammar in a similar fashion to Backus-Naur in a succinct approach.
 
-### Eacc-like/Parser
+### Parser
 
 The parser syntax is consistent and concrete. It allows you to link handles to token patterns and
 evaluate these rules according to your necessities.
@@ -339,12 +339,6 @@ Where lexmap obviously corresponds to the definition of a tuple.
 The lexer approach allows you to create multiple LexMap instances and combine them
 with a LexSeq instance. It permits one to tokenize and validate more complex structures in a reasonable
 and simplistic way.
-
-The idea behind eacc arouse when i was working to abstract a set of existing tools to improve 
-
-https://github.com/vyapp/vy
-
-That is my vim-like thing in python.
 
 # Install
 
