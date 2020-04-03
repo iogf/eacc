@@ -1,9 +1,9 @@
 """
 """
 
-from yacc.yacc import Yacc, Rule, Grammar, Struct
-from yacc.lexer import XSpec, Lexer, LexMap, LexNode
-from yacc.token import Blank, Word, TokVal, Sof, Eof
+from eacc.eacc import Eacc, Rule, Grammar, Struct
+from eacc.lexer import XSpec, Lexer, LexMap, LexNode
+from eacc.token import Blank, Word, TokVal, Sof, Eof
 
 class WordTokens(XSpec):
     lexmap  = LexMap()
@@ -25,7 +25,7 @@ class WordGrammar(Grammar):
 
 data = 'alpha beta gamma zeta' 
 lexer = Lexer(WordTokens)
-yacc  = Yacc(WordGrammar)
+eacc  = Eacc(WordGrammar)
 tokens = lexer.feed(data)
-ptree  = yacc.build(tokens)
+ptree  = eacc.build(tokens)
 print(list(ptree))

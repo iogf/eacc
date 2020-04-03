@@ -1,6 +1,6 @@
-from yacc.token import PTree, Sof, Eof, Token
+from eacc.token import PTree, Sof, Eof, Token
 
-class YaccError(Exception):
+class EaccError(Exception):
     pass
 
 class Grammar:
@@ -183,7 +183,7 @@ class Grouper:
 
     __repr__ = __str__
 
-class Yacc:
+class Eacc:
     def __init__(self, grammar):
         self.root = grammar.root
 
@@ -231,9 +231,9 @@ class Yacc:
     def handle_error(self, tokens):
         """
         """
-        print('Crocs Yacc error!')
+        print('Crocs Eacc error!')
         print('Tokens:', tokens)
-        raise YaccError('Unexpected struct!')
+        raise EaccError('Unexpected struct!')
 
     def add_handle(self, rule, handle):
         """

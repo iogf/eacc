@@ -12,8 +12,8 @@ The definition allows lists like below to be valid:
 
 """
 
-from yacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
-from yacc.token import Num, LB, RB, Comma
+from eacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
+from eacc.token import Num, LB, RB, Comma
 
 class ListTokens(XSpec):
     lexmap  = LexMap()

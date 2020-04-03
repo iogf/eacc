@@ -1,5 +1,5 @@
-from yacc.lexer import Lexer, LexMap, LexNode, XSpec
-from yacc.token import Char
+from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.token import Char
 
 class CharTokens(XSpec):
     lexmap = LexMap()

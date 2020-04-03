@@ -1,8 +1,8 @@
 """
 """
 
-from yacc.lexer import Lexer, LexSeq, SeqNode, R, LexMap, LexNode, XSpec
-from yacc.token import Blank, Num, LP, RP, RB, LB
+from eacc.lexer import Lexer, LexSeq, SeqNode, R, LexMap, LexNode, XSpec
+from eacc.token import Blank, Num, LP, RP, RB, LB
 
 class TupleTokens(XSpec):
     lex_tuple  = LexMap()

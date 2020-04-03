@@ -1,4 +1,4 @@
-from yacc.token import *
+from eacc.token import *
 import re
 
 class LexError(Exception):

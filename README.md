@@ -1,12 +1,12 @@
-# Yacc
+# Eacc
 
 If it looks like a duck, swims like a duck, and quacks like a duck, then it probably is a duck.
 
-Python Yacc is a parsing library with a powerful Backus-Naur variation. It implements a powerful lexer
+Python Eacc is a parsing library with a powerful Backus-Naur variation. It implements a powerful lexer
 that can be used to validate documents. It also implements a parsing mechanism to build AST's for documents.
 
 The notation to express grammar consists of defining token patterns in a similar fashion to Backus-Naur.
-The similarity with Backus-Naur form is merely superficial because in yacc it is purely using python code
+The similarity with Backus-Naur form is merely superficial because in eacc it is purely using python code
 to express the token patterns.
 
 A token has a type when a sequence of tokens is matched it evaluates to a specific type then rematcned
@@ -29,7 +29,7 @@ The parser has a lookahead mechanism to express precedence when matching rules. 
 to implement parsers to handle document structures. The lookahead mechanism makes it possible
 to handle ambiguous grammar in a similar fashion to Backus-Naur in a succinct approach.
 
-### Yacc-like/Parser
+### Eacc-like/Parser
 
 The parser syntax is consistent and concrete. It allows you to link handles to token patterns and
 evaluate these rules according to your necessities.
@@ -41,9 +41,9 @@ The below code specifies a lexer and a parsing approach for a simple expression 
 
 ~~~python
 
-from yacc.yacc import Rule, Grammar, Struct, Yacc
-from yacc.lexer import Lexer, LexMap, LexNode, XSpec
-from yacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
+from eacc.eacc import Rule, Grammar, Struct, Eacc
+from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
 
 class CalcTokens(XSpec):
     # The set of tokens that is used in the grammar.
@@ -150,19 +150,19 @@ def done(sof, expression, eof):
 data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
 lexer  = Lexer(CalcTokens)
 tokens = lexer.feed(data)
-yacc   = Yacc(CalcGrammar)
+eacc   = Eacc(CalcGrammar)
 
 # Map the patterns to handles to evaluate the expression.
-yacc.add_handle(CalcGrammar.r_plus, plus)
-yacc.add_handle(CalcGrammar.r_minus, minus)
-yacc.add_handle(CalcGrammar.r_div, div)
-yacc.add_handle(CalcGrammar.r_mul, mul)
-yacc.add_handle(CalcGrammar.r_paren, paren)
-yacc.add_handle(CalcGrammar.r_done, done)
-yacc.add_handle(CalcGrammar.r_num, num)
+eacc.add_handle(CalcGrammar.r_plus, plus)
+eacc.add_handle(CalcGrammar.r_minus, minus)
+eacc.add_handle(CalcGrammar.r_div, div)
+eacc.add_handle(CalcGrammar.r_mul, mul)
+eacc.add_handle(CalcGrammar.r_paren, paren)
+eacc.add_handle(CalcGrammar.r_done, done)
+eacc.add_handle(CalcGrammar.r_num, num)
 
 # Finally build the AST.
-ptree = yacc.build(tokens)
+ptree = eacc.build(tokens)
 ptree = list(ptree)
 ~~~
 
@@ -256,8 +256,8 @@ Sof Num Sof
 The lexer is really powerful it can handle some interesting cases in a short and simple manner.
 
 ~~~python
-from yacc.lexer import XSpec, Lexer, LexMap, SeqNode, LexNode, LexSeq
-from yacc.token import Token, Keyword, Identifier, RP, LP, Colon, Blank
+from eacc.lexer import XSpec, Lexer, LexMap, SeqNode, LexNode, LexSeq
+from eacc.token import Token, Keyword, Identifier, RP, LP, Colon, Blank
 
 class KeywordTokens(XSpec):
     lexmap = LexMap()
@@ -293,12 +293,12 @@ The above example handles the task of tokenizing keywords correctly. The SeqNode
 LexSeq to extract the tokens based on a given regex while LexNode works on its own to extract tokens that
 do not demand a lookahead step.
 
-The yacc lexer allows you to use also a similar Backus-Naur notation on Python classes to validate the
+The eacc lexer allows you to use also a similar Backus-Naur notation on Python classes to validate the
 structure of documents in the lexical step.
 
 ~~~python
-from yacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
-from yacc.token import Num, LP, RP, Blank, Comma
+from eacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
+from eacc.token import Num, LP, RP, Blank, Comma
 
 class TupleTokens(XSpec):
     lexmap  = LexMap()
@@ -323,7 +323,7 @@ print('Consumed:', list(tokens))
 The previous example would generate a lexical error due to the tuple being bad formed.
 The R class means Repeat.
 ~~~
-yacc.lexer.LexError: Unexpected token: ')'
+eacc.lexer.LexError: Unexpected token: ')'
 ~~~
 
 That code structure corresponds basically to:
@@ -340,7 +340,7 @@ The lexer approach allows you to create multiple LexMap instances and combine th
 with a LexSeq instance. It permits one to tokenize and validate more complex structures in a reasonable
 and simplistic way.
 
-The idea behind yacc arouse when i was working to abstract a set of existing tools to improve 
+The idea behind eacc arouse when i was working to abstract a set of existing tools to improve 
 
 https://github.com/vyapp/vy
 
@@ -351,11 +351,11 @@ That is my vim-like thing in python.
 **Note:** Work with python3 only.
 
 ~~~
-pip install yacc
+pip install eacc
 ~~~
 
 Documentation
 =============
 
-[Wiki](https://github.com/iogf/yacc/wiki)
+[Wiki](https://github.com/iogf/eacc/wiki)
 

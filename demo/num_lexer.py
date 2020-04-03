@@ -7,8 +7,8 @@ Thus the string below would give a lexical error.
     12 31 445
 """
 
-from yacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
-from yacc.token import Num, Blank
+from eacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
+from eacc.token import Num, Blank
 
 class NumsTokens(XSpec):
     lexmap  = LexMap()

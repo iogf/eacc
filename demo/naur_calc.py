@@ -1,7 +1,7 @@
 
-from yacc.yacc import Rule, Grammar, Struct, Yacc
-from yacc.lexer import Lexer, LexMap, LexNode, XSpec
-from yacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
+from eacc.eacc import Rule, Grammar, Struct, Eacc
+from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
 
 class CalcTokens(XSpec):
     # The set of tokens that is used in the grammar.
@@ -108,18 +108,18 @@ def done(sof, expression, eof):
 data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
 lexer  = Lexer(CalcTokens)
 tokens = lexer.feed(data)
-yacc   = Yacc(CalcGrammar)
+eacc   = Eacc(CalcGrammar)
 
 # Map the patterns to handles to evaluate the expression.
-yacc.add_handle(CalcGrammar.r_plus, plus)
-yacc.add_handle(CalcGrammar.r_minus, minus)
-yacc.add_handle(CalcGrammar.r_div, div)
-yacc.add_handle(CalcGrammar.r_mul, mul)
-yacc.add_handle(CalcGrammar.r_paren, paren)
-yacc.add_handle(CalcGrammar.r_done, done)
-yacc.add_handle(CalcGrammar.r_num, num)
+eacc.add_handle(CalcGrammar.r_plus, plus)
+eacc.add_handle(CalcGrammar.r_minus, minus)
+eacc.add_handle(CalcGrammar.r_div, div)
+eacc.add_handle(CalcGrammar.r_mul, mul)
+eacc.add_handle(CalcGrammar.r_paren, paren)
+eacc.add_handle(CalcGrammar.r_done, done)
+eacc.add_handle(CalcGrammar.r_num, num)
 
 # Finally build the AST.
-ptree = yacc.build(tokens)
+ptree = eacc.build(tokens)
 ptree = list(ptree)
 

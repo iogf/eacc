@@ -1,6 +1,6 @@
-from yacc.lexer import Lexer, LexMap, LexNode, XSpec
-from yacc.yacc import Grammar, Rule, T, Yacc, Struct
-from yacc.token import Blank, Num, Sof, Eof, LP, RP
+from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.eacc import Grammar, Rule, T, Eacc, Struct
+from eacc.token import Blank, Num, Sof, Eof, LP, RP
 
 class TupleTokens(XSpec):
     lexmap = LexMap()
@@ -31,10 +31,10 @@ def done(sof, expr, eof):
 
 print('Example 1')
 lexer  = Lexer(TupleTokens)
-yacc   = Yacc(TupleGrammar)
-yacc.add_handle(TupleGrammar.r_done, done)
+eacc   = Eacc(TupleGrammar)
+eacc.add_handle(TupleGrammar.r_done, done)
 
 data   = '(1 (2 3) 4 (5 (6) 7))'
 tokens = lexer.feed(data)
-ptree  = yacc.build(tokens)
+ptree  = eacc.build(tokens)
 ptree  = list(ptree)

@@ -1,12 +1,12 @@
 
 from distutils.core import setup
-setup(name="yacc",
+setup(name="eacc",
       version="1.0.0",
-      packages=["yacc", ],
+      packages=["eacc", ],
       author="Iury O. G. Figueiredo",
       author_email="last.src@gmail.com",
-      url='https://github.com/dracs/yacc',
-      download_url='https://github.com/dracs/yacc/releases',
-      keywords=['yacc', 'parsing', 'lexer', 'parser'],
+      url='https://github.com/dracs/eacc',
+      download_url='https://github.com/dracs/eacc/releases',
+      keywords=['eacc', 'parsing', 'lexer', 'parser'],
       classifiers=[],
-      description="Yacc-like parsing tools.",)
+      description="Eacc-like parsing tools.",)

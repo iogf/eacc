@@ -1,8 +1,8 @@
 """
 """
 
-from yacc.lexer import Lexer, LexMap, LexSeq, LexNode, SeqNode, XSpec
-from yacc.token import DoubleQuote, String, Blank
+from eacc.lexer import Lexer, LexMap, LexSeq, LexNode, SeqNode, XSpec
+from eacc.token import DoubleQuote, String, Blank
 
 class StringTokens(XSpec):
     lexmap = LexMap()

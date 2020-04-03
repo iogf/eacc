@@ -9,8 +9,8 @@ In the below example it generates an error due to mixing up
 digits.
 """
 
-from yacc.lexer import Lexer, LexMap, LexNode, XSpec
-from yacc.token import Letter, Blank
+from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.token import Letter, Blank
 
 class LetterTokens(XSpec):
     lexmap   = LexMap()

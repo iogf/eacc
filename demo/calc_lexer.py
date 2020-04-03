@@ -1,8 +1,8 @@
 """
 """
 
-from yacc.lexer import Lexer, LexMap, LexNode, XSpec
-from yacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank
+from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank
 
 class CalcTokens(XSpec):
     expression = LexMap()

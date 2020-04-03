@@ -5,8 +5,8 @@ a sequence of arguments like:
     1,2,3,4, ...
 """
 
-from yacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, XSpec
-from yacc.token import Num, Comma
+from eacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, XSpec
+from eacc.token import Num, Comma
 
 class ArgsTokens(XSpec):
     lexmap  = LexMap()

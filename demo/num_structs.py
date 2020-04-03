@@ -1,9 +1,9 @@
 """
 """
 
-from yacc.yacc import Yacc,  Rule, Grammar, Struct
-from yacc.lexer import XSpec, Lexer, LexMap, LexNode, TokVal
-from yacc.token import Eof, Sof, Num, Plus, Blank
+from eacc.eacc import Eacc,  Rule, Grammar, Struct
+from eacc.lexer import XSpec, Lexer, LexMap, LexNode, TokVal
+from eacc.token import Eof, Sof, Num, Plus, Blank
 
 class NumTokens(XSpec):
     lexmap  = LexMap()
@@ -30,8 +30,8 @@ class NumGrammar(Grammar):
 
 data = '1 + 2 + 2'
 lexer = Lexer(NumTokens)
-yacc  = Yacc(NumGrammar)
+eacc  = Eacc(NumGrammar)
 tokens = lexer.feed(data)
-ptree  = yacc.build(tokens)
+ptree  = eacc.build(tokens)
 print('Consumed:', list(ptree))
 
