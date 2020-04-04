@@ -16,13 +16,11 @@ class Lexer:
     def feed(self, data):
         """
         """
-        yield Token('', Sof)
         tseq = self.process(data)
         lmb  = lambda ind: not ind.discard
         tseq = filter(lmb, tseq)
         
         yield from tseq
-        yield Token('', Eof)
 
     def process(self, data):
         pos = 0

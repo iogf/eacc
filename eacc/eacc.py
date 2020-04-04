@@ -1,4 +1,5 @@
 from eacc.token import PTree, Sof, Eof, Token
+from itertools import chain
 
 class EaccError(Exception):
     pass
@@ -187,11 +188,12 @@ class Eacc:
     def __init__(self, grammar):
         self.root = grammar.root
 
-    def build(self, tseq, sub=False):
+    def build(self, tseq):
         """
         """
-        if sub:
-            tseq = self.add_se(tseq)
+
+        tseq = chain((Token('', Sof), ), 
+        tseq, (Token('', Eof, ),))
 
         tokens = Grouper()
         tokens.expand(tseq)
@@ -200,11 +202,6 @@ class Eacc:
 
         if not tokens.linked.empty():
             self.handle_error(tokens)
-
-    def add_se(self, tseq):
-        yield Token('', Sof)
-        yield from tseq
-        yield Token('', Eof)
 
     def process(self, tokens):
         while True:
