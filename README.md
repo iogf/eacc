@@ -148,7 +148,7 @@ def done(sof, num, eof):
 ~~~
 
 The Sof and Eof are start of file and end of file tokens. These are automatically inserted
-by the lexer.
+by the parser.
 
 In case it is not a valid mathematical expression then it raises an exception. 
 When a given document is well formed, the defined rules will consume it entirely.
