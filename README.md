@@ -111,6 +111,13 @@ ptree = eacc.build(tokens)
 ptree = list(ptree)
 ~~~
 
+That outputs:
+
+~~~
+[tau@archlinux demo]$ python calc.py 
+Result: 24.612244897959183
+~~~
+
 The parser has a lookahead mechanism based on rules as well.
 
 ~~~python
