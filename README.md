@@ -155,6 +155,7 @@ When a given document is well formed, the defined rules will consume it entirely
 
 The lexer is really flexible it can handle some interesting cases in a short and simple manner.
 
+~~~python
 from yacc.lexer import XSpec, Lexer, LexMap, SeqNode, LexNode, LexSeq
 from yacc.token import Token, Keyword, Identifier, RP, LP, Colon, Blank
 
@@ -179,6 +180,8 @@ lex = Lexer(KeywordTokens)
 data = 'if ifnum: foobar()'
 tokens = lex.feed(data)
 print('Consumed:', list(tokens))
+~~~
+
 That would output:
 
 Consumed: [Keyword('if'), Blank(' '), Identifier('ifnum'), Colon(':'),
