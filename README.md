@@ -184,8 +184,10 @@ print('Consumed:', list(tokens))
 
 That would output:
 
+~~~
 Consumed: [Keyword('if'), Blank(' '), Identifier('ifnum'), Colon(':'),
 Blank(' '), Identifier('foobar'), LP('('), RP(')')]
+~~~
 
 The above example handles the task of tokenizing keywords correctly. The SeqNode class 
 works together with LexSeq to extract the tokens based on a given regex while LexNode works 
