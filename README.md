@@ -21,9 +21,9 @@ The parser has a lookahead mechanism to express precedence when matching rules. 
 to implement parsers to handle document structures. The lookahead mechanism makes it possible
 to handle ambiguous grammar in a similar fashion to Backus-Naur in a succinct approach.
 
-It is quite simple to handle implement powerful tokenizers and succinct grammars succinctly
+It is quite simple to implement powerful tokenizers and grammars succinctly
 to handle a variety of scenaries. The [crocs](https://github.com/iogf/crocs) project uses 
-eacc to parse a given regex string and generate possible matches. 
+eacc to parse a given regex string and generating possible matches. 
 The regex parser implementation is quite straightforward.
 
 The code below specifies a lexer and a parsing approach for a simple expression calculator.
