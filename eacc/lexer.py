@@ -16,35 +16,21 @@ class Lexer:
     def feed(self, data):
         """
         """
-        tseq = self.process(data)
+        tseq = self.consume(data)
         lmb  = lambda ind: not ind.discard
         tseq = filter(lmb, tseq)
         
         yield from tseq
 
-    def process(self, data):
-        pos = 0
-        while True:
-            tseq = self.consume(data, pos)
-            if tseq:
-                yield from tseq
-                pos = tseq[-1].end
-            elif pos != len(data):
-                self.handle_error(data, pos)
-            else:
-                break
-
-    def consume(self, data, pos):
+    def consume(self, data):
         """
         """
-        for ind in self.root:
-            tseq = ind.consume(data, pos)
-            if tseq:
-                return tseq
+        pass
 
-    def handle_error(self, data, pos):
-        msg = 'Unexpected token: %s' % repr(data[pos:pos+30])
+    def handle_error(self, tseq):
+    
         raise LexError(msg)
+        pass
 
 class LexMap(XNode):
     def __init__(self):
@@ -56,17 +42,13 @@ class LexMap(XNode):
     def add(self, *args):
         self.children.extend(args)
 
-    def is_rulemap(self):
+    def is_map(self):
         return True
 
-    def consume(self, data, pos, exclude=()):
+    def consume(self, data, tseq):
         """
         """
-        for ind in self.children:
-            if not ind in exclude:
-                tseq = ind.consume(data, pos, exclude)
-                if tseq:
-                    return tseq
+        pass
 
     def __repr__(self):
         return 'LexMap(%s)' % self.children
@@ -75,30 +57,20 @@ class R(XNode):
     def __init__(self, lex, min=1, max=9999999999999):
         """
         R stands for Repeat. It makes sure a given lexical
-        condition happens n times where min < n < max or min < n.
+        pattern happens n times where min < n < max or min < n.
         """
 
         self.lex = lex
         self.min = min
         self.max = max
 
-    def is_rulemap(self):
-        return self.lex.is_rulemap()
+    def is_map(self):
+        return self.lex.is_map()
 
-    def consume(self, data, pos, exclude=()):
+    def consume(self, data, start, end, exclude=()):
         tseq  = TSeq()
         count = 0
-        while True:
-            token = self.lex.consume(data, pos, exclude)
-            if token:
-                tseq.extend(token)
-            elif self.min <= count < self.max:
-                break
-            else:
-                return None
-            pos = token[-1].end
-            count += 1
-        return tseq
+        pass
 
 class LexNode(XNode):
     def __init__(self, regstr, type=TokVal, cast=None, discard=False):
@@ -109,17 +81,19 @@ class LexNode(XNode):
         self.regstr = regstr
         self.type   = type
         self.cast   = cast
-        self.match  = self.regex.match
         self.discard = discard
 
-    def is_rulemap(self):
-        return False
+    def consume(self, data, tseq):
+        xseq = TSeq()
 
-    def consume(self, data, pos, exclude=()):
-        regobj = self.match(data, pos)
-        if regobj:
-            return TSeq((Token(regobj.group(), self.type, 
-                self.cast, regobj.start(), regobj.end(), self.discard), ))
+    def search(self, data, start, end):
+        pass
+
+    def match(self, data, start, end):
+        # regobj = self.match(data, pos)
+        # if regobj:
+            # return TSeq((Token(regobj.group(), self.type, 
+                # self.cast, regobj.start(), regobj.end(), self.discard), ))
     
     def __repr__(self):
         return 'SeqNode(%s(%s))' % (
@@ -129,8 +103,11 @@ class SeqNode(LexNode):
     def __init__(self, regstr, type=TokVal, cast=None, discard=False):
         super(SeqNode, self).__init__(regstr, type, cast, discard)
 
-    def is_rulemap(self):
-        return False
+    def search(self, data, start, end):
+        pass
+
+    def match(self, data, start, end):
+        pass
 
 class LexSeq(XNode):
     def __init__(self, *args):
@@ -142,21 +119,16 @@ class LexSeq(XNode):
         else:
             return ()
 
-    def is_rulemap(self):
-        return False
-    
-    def consume(self, data, pos, exclude=()):
-        tseq  = TSeq()
-        for ind in range(0, len(self.args)):
-            token = self.args[ind].consume(data, 
-            pos, self.fix_exclusion(exclude, ind))
-            if token != None:
-                tseq.extend(token)
-            else:
-                return None
-            if tseq:
-                pos = tseq[-1].end
-        return tseq
+    def consume(self, data, tseq):
+        tseq = TSeq()
+        pass
+
+    def search(self, start, end, exclude=()):
+        pass
+
+    def match(self, start, end, exclude=()):
+        tseq = TSeq()
+        pass
 
     def __repr__(self):
         return 'LexSeq(%s)' % self.xnodes

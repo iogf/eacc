@@ -2,7 +2,7 @@ class XNode:
     def __init__(self):
         pass
 
-    def is_rulemap(self):
+    def is_map(self):
         return False
 
 class PTree(list):
