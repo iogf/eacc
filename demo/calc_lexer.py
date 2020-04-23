@@ -14,7 +14,7 @@ class CalcTokens(XSpec):
     t_mul    = LexNode(r'\*', Mul)
     t_div    = LexNode(r'\/', Div)
 
-    t_num    = LexNode(r'[0-9]+', Num, float)
+    t_num    = LexNode(r'\d+', Num, float)
     t_blank  = LexNode(r' +', Blank)
 
     expression.add(t_plus, t_minus, t_lparen, t_num, 
@@ -26,8 +26,8 @@ print('Example 1')
 lex = Lexer(CalcTokens)
 # data = '1+1+(3*2+4)+' * 80000 + '2'
 
-data = '1+1+(3*2+4)'
+data = '1+1+2' * 80000
 
 tokens = lex.feed(data)
 tk = list(tokens)
-print('Consumed:', tk)
+# print('Consumed:', tk)
