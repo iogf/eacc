@@ -64,50 +64,28 @@ class LexNode(XNode):
         self.type   = type
         self.cast   = cast
         self.discard = discard
-        self.search = self.regex.search
+        self.finditer = self.regex.finditer
 
     def consume(self, data, tseq):
         xseq = TSeq()
-        if not tseq:
-            xseq.extend(self.loop(data, 0, len(data)))
-        else:
-            xseq.extend(self.step(data, tseq))
-        return xseq
-
-    def step(self, data, tseq):
-        xseq = TSeq()
-        key  = lambda ind: (ind.start, ind.end)
         pos  = 0
 
         for ind in tseq:
-            nseq = self.loop(data, pos, ind.start)
-            xseq.extend(nseq)
+            if pos < ind.start:
+                xseq.extend(self.find(data, pos, ind.start))
+            xseq.append(ind)
             pos = ind.end
 
-        end  = len(data) if tseq else xseq[-1]
-        nseq = self.loop(data, pos, end)
+        nseq = self.find(data, pos, len(data))
         xseq.extend(nseq)
-
-        xseq.extend(tseq)
-        return sorted(xseq, key=key)
-
-    def loop(self, data, start, end):
-        pos = start
-        while True:
-            tokens = self.find(data, pos, end)
-            if tokens != None:
-                pos = tokens[-1].end
-                yield from tokens
-            else:
-                break 
-        pass
+        return xseq
 
     def find(self, data, start, end):
-        regobj = self.search(data, start, end)
-        if regobj:
-            return (Token(regobj.group(), self.type, 
-                self.cast, regobj.start(), 
-                    regobj.end(), self.discard), )
+        regobjs = self.finditer(data, start, end)
+        tokens  = (Token(ind.group(), self.type, self.cast, ind.start(), 
+            ind.end(), self.discard) for ind in regobjs)
+
+        return tokens
 
     def __repr__(self):
         return 'SeqNode(%s(%s))' % (
