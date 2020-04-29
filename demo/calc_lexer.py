@@ -24,10 +24,10 @@ class CalcTokens(XSpec):
 
 print('Example 1')
 lex = Lexer(CalcTokens)
-# data = '1+1+(3*2+4)+' * 80000 + '2'
+data = '1+1+(3*2+4)+' * 170000 + '2'
 
-data = '1+1+(3*2+4)'
+# data = '1+1+(3*2+4)'
 
 tokens = lex.feed(data)
 tk = list(tokens)
-print('Consumed:', tk)
+# print('Consumed:', tk)

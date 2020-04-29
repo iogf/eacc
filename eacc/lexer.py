@@ -61,14 +61,17 @@ class LexMap(XNode):
     def build_regex(self):
         regdict = ((ind.mkgname(), ind) 
         for ind in self.children)
-        self.regdict = dict(regdict)
 
+        self.regdict = dict(regdict)
         regstr = (ind.mkregex() for ind in self.children)
+
         self.regstr = '|'.join(regstr)
-        self.regex  = compile(regstr)
+        self.regex  = re.compile(self.regstr, 0)
 
         groups   = self.regex.groupindex.items()
-        regindex = ((ind[0], ind[1]) for ind in groups)
+        regindex = ((ind[1], self.regdict[ind[0]]) 
+        for ind in groups)
+
         self.regindex = dict(regindex)
 
     def add(self, *args):
@@ -78,7 +81,9 @@ class LexMap(XNode):
     def consume(self, data, pos):
         """
         """
-        pass
+        regobj = self.regex.match(data, pos)
+        if regobj:
+            return self.regindex[regobj.lastindex].mktoken(regobj)
 
     def __repr__(self):
         return 'LexMap(%s)' % self.children
@@ -106,7 +111,6 @@ class LexNode(XNode):
         self.regstr = regstr
         self.type   = type
         self.cast   = cast
-        self.match  = self.regex.match
         self.discard = discard
 
     def mkgname(self):
@@ -115,7 +119,7 @@ class LexNode(XNode):
 
     def mkregex(self):
         gname = self.mkgname()
-        return '(?P<LN%s>%s)' % (gname, self.regstr)
+        return '(?P<%s>%s)' % (gname, self.regstr)
 
     def mktoken(self, regobj):
         return (Token(regobj.group(), self.type, 
