@@ -27,7 +27,9 @@ class Token:
     __slots__=['data', 'offset', 'type', 'value', 
     'start', 'end', 'discard']
 
-    def __init__(self, data, type, value, start, end, discard):
+    def __init__(self, data, type=None, value=None, 
+        start=None, end=None, discard=None):
+
         self.data = data
         self.value = value
         self.type = type
