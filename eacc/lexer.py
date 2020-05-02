@@ -63,7 +63,7 @@ class LexMap(XNode):
         for ind in self.children)
 
         self.regdict = dict(regdict)
-        regstr = (ind.mkregex() for ind in self.children)
+        regstr = (ind.mkindex() for ind in self.children)
 
         self.regstr = '|'.join(regstr)
         self.regex  = re.compile(self.regstr, 0)
@@ -83,7 +83,7 @@ class LexMap(XNode):
         """
         regobj = self.regex.match(data, pos)
         if regobj:
-            return self.regindex[regobj.lastindex].mktoken(regobj)
+            return self.regindex[regobj.lastindex].mktoken(data, regobj)
 
     def __repr__(self):
         return 'LexMap(%s)' % self.children
@@ -122,11 +122,11 @@ class LexNode(XNode):
         gname = 'LN%s' % id(self)
         return gname
 
-    def mkregex(self):
+    def mkindex(self):
         gname = self.mkgname()
         return '(?P<%s>%s)' % (gname, self.regstr)
 
-    def mktoken(self, regobj):
+    def mktoken(self, data, regobj):
         return (self.cast(regobj.group(), self.type, 
                 regobj.group(), regobj.start(), regobj.end(), self.discard), )
 
@@ -138,20 +138,25 @@ class SeqNode(LexNode):
     def __init__(self, regstr, type=TokVal, cast=None, discard=False):
         super(SeqNode, self).__init__(regstr, type, cast, discard)
 
+    def mkindex(self):
+        pass
+
     def consume(self, data, pos):
-        regobj = self.match(data, pos)
-        if regobj:
-            return TSeq((Token(regobj.group(), self.type, 
-                self.cast, regobj.start(), regobj.end(), self.discard), ))
+        pass
 
 class LexSeq(XNode):
     def __init__(self, *args):
         self.args = args
 
-    def mkregex(self):
-        return self.args[0].mkregex()
+    def mkgname(self):
+        gname = 'LS%s' % id(self)
+        return gname
 
-    def consume(self, data, pos, exclude=()):
+    def mkindex(self):
+        gname = self.mkgname()
+        return '(?P<%s>%s)' % (gname, self.args[0].mkindex())
+
+    def mktoken(self, data, regobj):
         pass
 
     def __repr__(self):
