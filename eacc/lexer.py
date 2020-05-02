@@ -110,8 +110,13 @@ class LexNode(XNode):
         # self.regex  = re.compile(regstr)
         self.regstr = regstr
         self.type   = type
-        self.cast   = cast
+
+        # self.cast   = cast
         self.discard = discard
+
+        self.cast = (lambda data, type, value, 
+        start, end, discard: Token(data, type, cast(value), 
+        start, end, discard)) if cast else Token
 
     def mkgname(self):
         gname = 'LN%s' % id(self)
@@ -122,8 +127,8 @@ class LexNode(XNode):
         return '(?P<%s>%s)' % (gname, self.regstr)
 
     def mktoken(self, regobj):
-        return (Token(regobj.group(), self.type, 
-                self.cast, regobj.start(), regobj.end(), self.discard), )
+        return (self.cast(regobj.group(), self.type, 
+                regobj.group(), regobj.start(), regobj.end(), self.discard), )
 
     def __repr__(self):
         return 'SeqNode(%s(%s))' % (
