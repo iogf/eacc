@@ -17,8 +17,8 @@ class CalcTokens(XSpec):
     t_num    = LexNode(r'[0-9]+', Num, float)
     t_blank  = LexNode(r' +', Blank)
 
-    expression.add(t_plus, t_minus, t_lparen, t_num, 
-    t_blank, t_rparen, t_mul, t_div)
+    expression.add(t_num, t_blank, t_plus, t_minus, t_lparen, 
+    t_rparen, t_mul, t_div)
 
     root = [expression]
 

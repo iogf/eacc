@@ -83,7 +83,9 @@ class LexMap(XNode):
         """
         regobj = self.regex.match(data, pos)
         if regobj:
-            return self.regindex[regobj.lastindex].mktoken(data, regobj)
+            token = self.regindex[regobj.lastindex].mktoken(data, regobj)
+            if token:
+                return token
 
     def __repr__(self):
         return 'LexMap(%s)' % self.children
@@ -107,7 +109,6 @@ class LexNode(XNode):
         """
         """
         super(XNode, self).__init__()
-        # self.regex  = re.compile(regstr)
         self.regstr = regstr
         self.type   = type
 
@@ -137,15 +138,19 @@ class LexNode(XNode):
 class SeqNode(LexNode):
     def __init__(self, regstr, type=TokVal, cast=None, discard=False):
         super(SeqNode, self).__init__(regstr, type, cast, discard)
+        self.regex  = re.compile(regstr)
 
     def mkindex(self):
-        pass
+        return self.regstr
 
     def consume(self, data, pos):
-        pass
+        regobj = self.regex.match(data, pos)
+        if regobj:
+            return self.mktoken(data, regobj)
 
 class LexSeq(XNode):
-    def __init__(self, *args):
+    def __init__(self, arg0, *args):
+        self.arg0 = arg0
         self.args = args
 
     def mkgname(self):
@@ -154,10 +159,20 @@ class LexSeq(XNode):
 
     def mkindex(self):
         gname = self.mkgname()
-        return '(?P<%s>%s)' % (gname, self.args[0].mkindex())
+        return '(?P<%s>%s)' % (gname, self.arg0.mkindex())
 
     def mktoken(self, data, regobj):
-        pass
+        tseq = TSeq()
+        token = self.arg0.mktoken(data, regobj)
+        tseq.extend(token)
+
+        for ind in self.args:
+            token = ind.consume(data, tseq[-1].end)
+            if token:
+                tseq.extend(token)
+            else:
+                return None
+        return tseq
 
     def __repr__(self):
         return 'LexSeq(%s)' % self.xnodes
