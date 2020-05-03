@@ -1,12 +1,9 @@
 
 from eacc.eacc import Rule, Grammar, Struct, Eacc
-from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.lexer import Lexer, LexNode, XSpec
 from eacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
 
 class CalcTokens(XSpec):
-    # The set of tokens that is used in the grammar.
-    expression = LexMap()
-
     # Used to extract the tokens.
     t_plus   = LexNode(r'\+', Plus)
     t_minus  = LexNode(r'\-', Minus)
@@ -19,10 +16,8 @@ class CalcTokens(XSpec):
     t_num    = LexNode(r'[0-9]+', Num, float)
     t_blank  = LexNode(r' +', Blank, discard=True)
 
-    expression.add(t_plus, t_minus, t_lparen, t_num, 
-    t_blank, t_rparen, t_mul, t_div)
-
-    root = [expression]
+    root = [t_plus, t_minus, t_lparen, t_num, 
+    t_blank, t_rparen, t_mul, t_div]
 
 class CalcGrammar(Grammar):
     # The grammar struct.

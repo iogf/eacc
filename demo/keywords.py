@@ -1,11 +1,10 @@
 """
 """
 
-from eacc.lexer import XSpec, Lexer, LexMap, SeqNode, LexNode, LexSeq
+from eacc.lexer import XSpec, Lexer, SeqNode, LexNode, LexSeq
 from eacc.token import Keyword, Identifier, RP, LP, Colon, Blank
 
 class KeywordTokens(XSpec):
-    lexmap = LexMap()
     t_if = LexSeq(SeqNode(r'if', type=Keyword),
     SeqNode(r'\s+', type=Blank))
 
@@ -17,9 +16,8 @@ class KeywordTokens(XSpec):
     # Match identifier only if it is not an if.
     t_identifier = LexNode(r'[a-zA-Z0-9]+', type=Identifier)
 
-    lexmap.add(t_if, t_blank, t_lparen, 
-    t_rparen, t_colon, t_identifier)
-    root = [lexmap]
+    root = [t_if, t_blank, t_lparen, 
+    t_rparen, t_colon, t_identifier]
 
 lex = Lexer(KeywordTokens)
 data = 'if ifnum: foobar()'

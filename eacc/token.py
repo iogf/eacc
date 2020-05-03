@@ -25,17 +25,16 @@ class PTree(list):
 
 class Token:
     __slots__=['data', 'offset', 'type', 'value', 
-    'start', 'end', 'discard']
+    'start', 'end']
 
     def __init__(self, data, type=None, value=None, 
-        start=None, end=None, discard=None):
+        start=None, end=None):
 
         self.data = data
         self.value = value
         self.type = type
         self.start = start
         self.end = end
-        self.discard = discard
 
     def val(self):
         return self.value

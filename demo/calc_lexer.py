@@ -1,11 +1,10 @@
 """
 """
 
-from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.lexer import Lexer, LexNode, XSpec
 from eacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank
 
 class CalcTokens(XSpec):
-    expression = LexMap()
     t_plus   = LexNode(r'\+', Plus)
     t_minus  = LexNode(r'\-', Minus)
 
@@ -17,10 +16,9 @@ class CalcTokens(XSpec):
     t_num    = LexNode(r'[0-9]+', Num, float)
     t_blank  = LexNode(r' +', Blank)
 
-    expression.add(t_num, t_blank, t_plus, t_minus, t_lparen, 
-    t_rparen, t_mul, t_div)
 
-    root = [expression]
+    root = [t_num, t_blank, t_plus, t_minus, t_lparen, 
+    t_rparen, t_mul, t_div]
 
 print('Example 1')
 lex = Lexer(CalcTokens)
