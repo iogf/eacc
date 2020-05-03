@@ -22,17 +22,19 @@ class Lexer:
         """
         """
         pos = 0
-        while True:
+        regdict = self.regdict
+        regobj  = True
+
+        while regobj:
             regobj = self.regex.match(data, pos)
             if regobj: 
                 pos = regobj.end()
-                mktoken = self.regdict.get((regobj.lastgroup))
+                mktoken = regdict.get(regobj.lastgroup)
                 if mktoken:
                     yield from mktoken(regobj)
-            elif pos != len(data):
-                raise self.handle_error(data, pos)
-            else:
-                break
+
+        if pos != len(data):
+            raise self.handle_error(data, pos)
 
     def handle_error(self, data, pos):
         msg = 'Unexpected token: %s' % repr(data[pos:pos+30])
