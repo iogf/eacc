@@ -22,7 +22,7 @@ class CalcTokens(XSpec):
 
 print('Example 1')
 lex = Lexer(CalcTokens)
-data = '1+1+(3*2+4)+' * 190000 + '2'
+data = '1+1+(3*2+4)+' * 390000 + '2'
 
 # data = '1+1+(3*2+4)'
 

@@ -8,7 +8,7 @@ class XSpec:
     pass
 
 class Lexer:
-    def __init__(self, xspec):
+    def __init__(self, xspec, no_errors=False):
         """
         """
         self.root = xspec.root
@@ -16,29 +16,27 @@ class Lexer:
         self.regex    = None
         self.regdict  = {}
         self.build_regex()
+        self.no_errors = no_errors
 
+    def handle_error(self, data, pos):
+        msg = 'Unexpected token: %s' % repr(data[pos:pos+30])
+        raise LexError(msg)
 
     def feed(self, data):
         """
         """
         pos = 0
         regdict = self.regdict
-        regobj  = True
+        regobj  = self.regex.finditer(data)
 
-        while regobj:
-            regobj = self.regex.match(data, pos)
-            if regobj: 
-                pos = regobj.end()
-                mktoken = regdict.get(regobj.lastgroup)
-                if mktoken:
-                    yield from mktoken(regobj)
-
-        if pos != len(data):
-            raise self.handle_error(data, pos)
-
-    def handle_error(self, data, pos):
-        msg = 'Unexpected token: %s' % repr(data[pos:pos+30])
-        raise LexError(msg)
+        for ind in regobj:
+            if pos != ind.start():
+                if not self.no_errors:
+                    raise self.handle_error(data, pos)
+            pos = ind.end()
+            mktoken = regdict.get(ind.lastgroup)
+            if mktoken:
+                yield from mktoken(ind)
 
     def build_regex(self):
         regdict = ((ind.gname, ind.mktoken)
