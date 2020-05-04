@@ -52,7 +52,7 @@ class Lexer:
         return 'LexMap(%s)' % self.children
 
 class LexTok(XNode):
-    def __init__(self, regstr, type=TokVal, cast=None, discard=False):
+    def __init__(self, regstr, type=TokVal, cast=None, discard=False, wrapper=None):
         """
         """
         super(XNode, self).__init__()
@@ -64,6 +64,9 @@ class LexTok(XNode):
         self.cast = (lambda data, type, value, 
         start, end: Token(data, type, cast(value), 
         start, end)) if cast else Token
+
+        if wrapper:
+            self.mktoken = lambda regobj: wrapper(self, regobj)
 
     def mkgname(self):
         gname = 'LN%s' % id(self)
@@ -102,9 +105,12 @@ class SeqTok(LexTok):
             mstr, start, end), )
 
 class LexSeq(XNode):
-    def __init__(self, *args):
+    def __init__(self, *args, wrapper=None):
         self.args = args
         self.gname = self.mkgname()
+
+        if wrapper:
+            self.mktoken = lambda regobj: wrapper(self, regobj)
 
     def mkgname(self):
         gname = 'LS%s' % id(self)
