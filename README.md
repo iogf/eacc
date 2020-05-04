@@ -28,7 +28,7 @@ Based on such a simple assertion it is possible to implement our calculator.
 
 ~~~python
 from eacc.eacc import Rule, Grammar, Struct, Eacc
-from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.lexer import Lexer, LexMap, LexTok, XSpec
 from eacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
 
 class CalcTokens(XSpec):
@@ -36,16 +36,16 @@ class CalcTokens(XSpec):
     expression = LexMap()
 
     # Used to extract the tokens.
-    t_plus   = LexNode(r'\+', Plus)
-    t_minus  = LexNode(r'\-', Minus)
+    t_plus   = LexTok(r'\+', Plus)
+    t_minus  = LexTok(r'\-', Minus)
 
-    t_lparen = LexNode(r'\(', LP)
-    t_rparen = LexNode(r'\)', RP)
-    t_mul    = LexNode(r'\*', Mul)
-    t_div    = LexNode(r'\/', Div)
+    t_lparen = LexTok(r'\(', LP)
+    t_rparen = LexTok(r'\)', RP)
+    t_mul    = LexTok(r'\*', Mul)
+    t_div    = LexTok(r'\/', Div)
 
-    t_num    = LexNode(r'[0-9]+', Num, float)
-    t_blank  = LexNode(r' +', Blank, discard=True)
+    t_num    = LexTok(r'[0-9]+', Num, float)
+    t_blank  = LexTok(r' +', Blank, discard=True)
 
     expression.add(t_plus, t_minus, t_lparen, t_num, 
     t_blank, t_rparen, t_mul, t_div)
@@ -163,21 +163,21 @@ When a given document is well formed, the defined rules will consume it entirely
 The lexer is really flexible it can handle some interesting cases in a short and simple manner.
 
 ~~~python
-from yacc.lexer import XSpec, Lexer, LexMap, SeqNode, LexNode, LexSeq
+from yacc.lexer import XSpec, Lexer, LexMap, SeqTok, LexTok, LexSeq
 from yacc.token import Token, Keyword, Identifier, RP, LP, Colon, Blank
 
 class KeywordTokens(XSpec):
     lexmap = LexMap()
-    t_if = LexSeq(SeqNode(r'if', type=Keyword),
-    SeqNode(r'\s+', type=Blank))
+    t_if = LexSeq(SeqTok(r'if', type=Keyword),
+    SeqTok(r'\s+', type=Blank))
 
-    t_blank  = LexNode(r' +', type=Blank)
-    t_lparen = LexNode(r'\(', type=LP)
-    t_rparen = LexNode(r'\)', type=RP)
-    t_colon  = LexNode(r'\:', type=Colon)
+    t_blank  = LexTok(r' +', type=Blank)
+    t_lparen = LexTok(r'\(', type=LP)
+    t_rparen = LexTok(r'\)', type=RP)
+    t_colon  = LexTok(r'\:', type=Colon)
 
     # Match identifier only if it is not an if.
-    t_identifier = LexNode(r'[a-zA-Z0-9]+', type=Identifier)
+    t_identifier = LexTok(r'[a-zA-Z0-9]+', type=Identifier)
 
     lexmap.add(t_if, t_blank, t_lparen, 
     t_rparen, t_colon, t_identifier)
@@ -196,8 +196,8 @@ Consumed: [Keyword('if'), Blank(' '), Identifier('ifnum'), Colon(':'),
 Blank(' '), Identifier('foobar'), LP('('), RP(')')]
 ~~~
 
-The above example handles the task of tokenizing keywords correctly. The SeqNode class 
-works together with LexSeq to extract the tokens based on a given regex while LexNode works 
+The above example handles the task of tokenizing keywords correctly. The SeqTok class 
+works together with LexSeq to extract the tokens based on a given regex while LexTok works 
 on its own to extract tokens that do not demand a lookahead step.
 
 # Install

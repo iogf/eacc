@@ -1,35 +1,27 @@
 
 from eacc.eacc import Rule, Grammar, Struct, Eacc
-from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.lexer import Lexer, LexTok, XSpec
 from eacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
 
 class CalcTokens(XSpec):
-    # The set of tokens that is used in the grammar.
-    expression = LexMap()
-
     # Token extractors. When it matches the regex's it instantiate
     # a Token class with the specified type.
-    t_plus  = LexNode(r'\+', Plus)
-    t_minus = LexNode(r'\-', Minus)
+    t_plus  = LexTok(r'\+', Plus)
+    t_minus = LexTok(r'\-', Minus)
 
-    t_lparen = LexNode(r'\(', LP)
-    t_rparen = LexNode(r'\)', RP)
-    t_mul    = LexNode(r'\*', Mul)
-    t_div    = LexNode(r'\/', Div)
+    t_lparen = LexTok(r'\(', LP)
+    t_rparen = LexTok(r'\)', RP)
+    t_mul    = LexTok(r'\*', Mul)
+    t_div    = LexTok(r'\/', Div)
 
     # Automatically convert the token value to a float.
-    t_num    = LexNode(r'[0-9]+', Num, float)
+    t_num    = LexTok(r'[0-9]+', Num, float)
 
     # White spaces are discarded.
-    t_blank  = LexNode(r' +', Blank, discard=True)
+    t_blank  = LexTok(r' +', Blank, discard=True)
 
-    expression.add(t_plus, t_minus, t_lparen, t_num, 
-    t_blank, t_rparen, t_mul, t_div)
-
-    # You can model your lexer with multiple LexMap
-    # instances and combine them with LexSeq it turns possible
-    # and easy to validate documents in the lexical step.
-    root = [expression]
+    root = [t_plus, t_minus, t_lparen, t_num, 
+    t_blank, t_rparen, t_mul, t_div]
 
 class CalcGrammar(Grammar):
     # A mathematical expression is a structure

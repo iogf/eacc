@@ -1,16 +1,16 @@
 """
 """
 
-from eacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
+from eacc.fmt import Lexer, LexMap, SeqTok, R, LexSeq, LexTok, XSpec
 from eacc.token import Num, LP, RP, Blank
 
 class TupleTokens(XSpec):
     lexmap  = LexMap()
-    t_paren = LexSeq(SeqNode(r'\(', LP), 
-    R(lexmap, 0), SeqNode(r'\)', RP))
+    t_paren = LexSeq(SeqTok(r'\(', LP), 
+    R(lexmap, 0), SeqTok(r'\)', RP))
 
-    t_blank = LexNode(r' +', Blank)
-    t_elem  = LexNode(r'[0-9]+', Num)
+    t_blank = LexTok(r' +', Blank)
+    t_elem  = LexTok(r'[0-9]+', Num)
 
     lexmap.add(t_paren, t_elem, t_blank)
     root = [lexmap]

@@ -51,7 +51,7 @@ class Lexer:
     def __repr__(self):
         return 'LexMap(%s)' % self.children
 
-class LexNode(XNode):
+class LexTok(XNode):
     def __init__(self, regstr, type=TokVal, cast=None, discard=False):
         """
         """
@@ -83,12 +83,12 @@ class LexNode(XNode):
             mstr, regobj.start(), regobj.end()), )
 
     def __repr__(self):
-        return 'SeqNode(%s(%s))' % (
+        return 'SeqTok(%s(%s))' % (
             self.type.__name__, repr(self.regstr))
 
-class SeqNode(LexNode):
+class SeqTok(LexTok):
     def __init__(self, regstr, type=TokVal, cast=None, discard=False):
-        super(SeqNode, self).__init__(regstr, type, cast, discard)
+        super(SeqTok, self).__init__(regstr, type, cast, discard)
 
     def mkgname(self):
         gname = 'SN%s' % id(self)

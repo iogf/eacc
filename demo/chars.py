@@ -1,13 +1,9 @@
-from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.lexer import Lexer, LexTok, XSpec
 from eacc.token import Char
 
 class CharTokens(XSpec):
-    lexmap = LexMap()
-
-    t_char  = LexNode(r'.', Char)
-    lexmap.add(t_char)
-
-    root = [lexmap]
+    t_char  = LexTok(r'.', Char)
+    root = [t_char]
 
 data = 'abc'
 lexer  = Lexer(CharTokens)

@@ -2,18 +2,16 @@
 """
 
 from eacc.eacc import Eacc,  Rule, Grammar, Struct
-from eacc.lexer import XSpec, Lexer, LexMap, LexNode, TokVal
+from eacc.lexer import XSpec, Lexer, LexTok, TokVal
 from eacc.token import Eof, Sof, Num, Plus, Blank
 
 class NumTokens(XSpec):
-    lexmap  = LexMap()
-    t_num = LexNode(r'[1-9]+', type=Num)
-    t_plus = LexNode(r'\+', type=Plus)
+    t_num = LexTok(r'[1-9]+', type=Num)
+    t_plus = LexTok(r'\+', type=Plus)
 
-    t_blank = LexNode(r' +', type=Blank, discard=True)
-    lexmap.add(t_num, t_plus, t_blank)
+    t_blank = LexTok(r' +', type=Blank, discard=True)
 
-    root = [lexmap]
+    root = [t_num, t_plus, t_blank]
 
 class NumGrammar(Grammar):
     type0   = Struct()

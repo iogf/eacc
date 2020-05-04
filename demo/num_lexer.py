@@ -7,18 +7,14 @@ Thus the string below would give a lexical error.
     12 31 445
 """
 
-from eacc.lexer import Lexer, LexMap, SeqNode, R, LexSeq, LexNode, XSpec
+from eacc.lexer import Lexer, SeqTok, LexSeq, LexTok, XSpec
 from eacc.token import Num, Blank
 
 class NumsTokens(XSpec):
-    lexmap  = LexMap()
-    t_blank = LexNode(r' +', Blank)
-    t_num   = SeqNode(r'[0-9]', Num)
+    t_blank = LexTok(r' +', Blank)
+    t_num   = LexTok(r'[0-9]{3,6}', Num)
 
-    t_elem  = LexSeq(R(t_num, 3, 6))
-
-    lexmap.add(t_elem, t_blank)
-    root = [lexmap]
+    root = [t_num, t_blank]
 
 print('Example 1')
 lex = Lexer(NumsTokens)
