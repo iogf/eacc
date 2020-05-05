@@ -1,7 +1,10 @@
 
-from eacc.eacc import Rule, Grammar, Struct, Eacc
+from eacc.eacc import Rule, Grammar, Eacc
 from eacc.lexer import Lexer, LexTok, XSpec
-from eacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
+from eacc.token import TokType, Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
+
+class Expr(TokType):
+    pass
 
 class CalcTokens(XSpec):
     # Token extractors. When it matches the regex's it instantiate
@@ -24,47 +27,20 @@ class CalcTokens(XSpec):
     t_blank, t_rparen, t_mul, t_div]
 
 class CalcGrammar(Grammar):
-    # A mathematical expression is a structure
-    # of data.
-    expression = Struct()
-    
-    # The rules to parse the structure.
-    r_paren = Rule(LP, expression, RP, type=expression)
-        
-    # The resulting parse tree will have type expression it will be
-    # rematched again against all the rules.
-    r_div   = Rule(expression, Div, expression, type=expression)
-    r_mul   = Rule(expression, Mul, expression, type=expression)
+    r_paren = Rule(LP, Expr, RP, type=Expr)
+    r_div   = Rule(Expr, Div, Expr, type=Expr)
+    r_mul   = Rule(Expr, Mul, Expr, type=Expr)
 
     # The lookahead rules to fix ambiguity.
     o_div   = Rule(Div)
     o_mul   = Rule(Mul)
+    r_plus  = Rule(Expr, Plus, Expr, type=Expr, up=(o_mul, o_div))
+    r_minus = Rule(Expr, Minus, Expr, type=Expr, up=(o_mul, o_div))
+    r_num   = Rule(Num, type=Expr)
+    r_done  = Rule(Sof, Expr, Eof)
 
-    r_plus  = Rule(expression, Plus, expression, 
-    type=expression, up=(o_mul, o_div))
-
-    r_minus = Rule(expression, Minus, expression, 
-    type=expression, up=(o_mul, o_div))
-
-    # When a Num is matched it is associated to the type
-    # expression then rematched against the previous rules
-    r_num = Rule(Num, type=expression)
-
-    # When a math expression is fully evaluated it will result
-    # in the below pattern. This rule is used to consume the resulting
-    # structure. Sof stands for stard of file. 
-    #
-    # The resulting structure will contain the math expression
-    # value.
-    r_done  = Rule(Sof, expression, Eof)
-
-    expression.add(r_paren, r_plus, r_minus, 
-    r_mul, r_div, r_num, r_done)
-
-    # You can define multiple structures to simplify
-    # handling more complex grammars and combine them
-    # inside rules.
-    root = [expression]
+    root = [r_paren, r_plus, r_minus, 
+    r_mul, r_div, r_num, r_done]
 
 def plus(expr, sign, term):
     return expr.val() + term.val()
