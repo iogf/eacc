@@ -229,7 +229,7 @@ class Escape(TokType):
 class String(TokType):
     pass
 
-class Regex(TokType):
+class RegStr(TokType):
     pass
 
 class Symbol(TokType):
@@ -266,4 +266,7 @@ class Exclam(TokType):
     pass
 
 class Letter(TokType):
+    pass
+
+class Pipe(TokType):
     pass
