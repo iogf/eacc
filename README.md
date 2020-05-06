@@ -188,7 +188,7 @@ Consumed: [Keyword('if'), Blank(' '), Identifier('ifnum'), Colon(':'),
 Blank(' '), Identifier('foobar'), LP('('), RP(')')]
 ~~~
 
-The above example handles the task of tokenizing keywords correctly. The SeqNode class 
+The above example handles the task of tokenizing keywords correctly. The SeqTok class 
 works together with LexSeq to extract the tokens based on a given regex while LexNode works 
 on its own to extract tokens that do not demand a lookahead step.
 
