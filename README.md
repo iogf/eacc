@@ -92,7 +92,6 @@ def done(sof, num, eof):
     return num.val()
 
 data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))' 
-data = '1+1+(3*2+4)+' * 17000 + '2'
 
 lexer  = Lexer(CalcTokens)
 tokens = lexer.feed(data)
@@ -108,9 +107,6 @@ eacc.add_handle(CalcGrammar.r_done, done)
 
 ptree = eacc.build(tokens)
 ptree = list(ptree)
-
-
-
 ~~~
 
 The parser has a lookahead mechanism based on rules as well.
