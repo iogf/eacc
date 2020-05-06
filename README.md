@@ -3,8 +3,7 @@
 Python Eacc is a parsing tool it implements a flexible lexer and a straightforward approach
 to build AST's from documents. It uses Python code to specify both lexer and grammar for a given
 document. Eacc can handle more succinctly all parsing cases that existing Python parsing tools
-propose to address. Its lexer is extremely fast and it also has a powerful approach to solve
-token precedence issues.
+propose to address. 
 
 Documents are split into tokens and a token has a type when a sequence of tokens is matched 
 it evaluates to a specific type then rematcned again against the existing rules. 
