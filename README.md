@@ -157,9 +157,6 @@ When a given document is well formed, the defined rules will consume it entirely
 The lexer is really flexible it can handle some interesting cases in a short and simple manner.
 
 ~~~python
-"""
-"""
-
 from eacc.lexer import XSpec, Lexer, SeqTok, LexTok, LexSeq
 from eacc.token import Keyword, Identifier, RP, LP, Colon, Blank
 
