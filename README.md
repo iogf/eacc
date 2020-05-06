@@ -200,9 +200,6 @@ on its own to extract tokens that do not demand a lookahead step.
 pip install eacc
 ~~~
 
-Documentation
-=============
-
-[Wiki](https://github.com/iogf/eacc/wiki)
+## [Documentation](https://github.com/iogf/eacc/wiki)
 
 
