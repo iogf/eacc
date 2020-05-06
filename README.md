@@ -27,14 +27,19 @@ to handle ambiguous grammar in a similar fashion to Backus-Naur in a succinct ap
 # Features
 
 - **Fast and flexible Lexer**
+    * Use class inheritance to extend/modify your existing lexers.
 
 - **Handle broken documents easily**
+    * Ideal to implement cool IDE's features.
 
 - **Short implementation**
+    * You can easily extend or modify functionalities.
 
 - **Powerful but easy to learn**
+    * Learn a few classes workings to implement a parser.
 
 - **Pythonic notation for grammars**
+    * No need to dig deep into grammar theory.
 
 - **Complex parsing problems succinctly**
     * Ex: Regex Debugging Tools https://github.com/iogf/crocs
