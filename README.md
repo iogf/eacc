@@ -24,10 +24,22 @@ The parser has a lookahead mechanism to express precedence when matching rules. 
 to implement parsers to handle document structures. The lookahead mechanism makes it possible
 to handle ambiguous grammar in a similar fashion to Backus-Naur in a succinct approach.
 
-It is quite simple to implement powerful tokenizers and grammars succinctly
-to handle a variety of scenaries. The [crocs](https://github.com/iogf/crocs) project uses 
-eacc to parse a given regex string and generating possible matches. 
-The regex parser implementation is quite straightforward.
+# Features
+
+- **Fast and flexible Lexer**
+
+- **Handle broken documents easily**
+
+- **Short implementation**
+
+- **Powerful but easy to learn**
+
+- **Pythonic notation for grammars**
+
+- **Complex parsing problems succinctly**
+    * Ex: Regex Debugging Tools https://github.com/iogf/crocs
+
+# Basic Example
 
 The code below specifies a lexer and a parsing approach for a simple expression calculator.
 When one of the mathematical operations +, -, * or / is executed then the result is a number
