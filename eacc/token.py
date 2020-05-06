@@ -25,18 +25,16 @@ class PTree(list):
 
 class Token:
     __slots__=['data', 'offset', 'type', 'value', 
-    'pos', 'start', 'end', 'discard']
+    'start', 'end']
 
-    def __init__(self, data, type=None, cast=None, 
-        start=None, end=None, discard=False):
+    def __init__(self, data, type=None, value=None, 
+        start=None, end=None):
 
         self.data = data
-        self.value = cast(data) if cast else data
+        self.value = value
         self.type = type
-        self.pos = (start, end)
         self.start = start
         self.end = end
-        self.discard = discard
 
     def val(self):
         return self.value
@@ -231,7 +229,7 @@ class Escape(TokType):
 class String(TokType):
     pass
 
-class Regex(TokType):
+class RegStr(TokType):
     pass
 
 class Symbol(TokType):
@@ -268,4 +266,7 @@ class Exclam(TokType):
     pass
 
 class Letter(TokType):
+    pass
+
+class Pipe(TokType):
     pass

@@ -1,33 +1,25 @@
 
-from eacc.eacc import Rule, Grammar, Struct, Eacc
-from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.eacc import Rule, Grammar, Eacc
+from eacc.lexer import Lexer, LexTok, XSpec
 from eacc.token import Plus, Minus, LP, RP, Mul, Div, Num, Blank, Sof, Eof
 
 class CalcTokens(XSpec):
-    # The set of tokens that is used in the grammar.
-    expression = LexMap()
-
     # Used to extract the tokens.
-    t_plus   = LexNode(r'\+', Plus)
-    t_minus  = LexNode(r'\-', Minus)
+    t_plus   = LexTok(r'\+', Plus)
+    t_minus  = LexTok(r'\-', Minus)
 
-    t_lparen = LexNode(r'\(', LP)
-    t_rparen = LexNode(r'\)', RP)
-    t_mul    = LexNode(r'\*', Mul)
-    t_div    = LexNode(r'\/', Div)
+    t_lparen = LexTok(r'\(', LP)
+    t_rparen = LexTok(r'\)', RP)
+    t_mul    = LexTok(r'\*', Mul)
+    t_div    = LexTok(r'\/', Div)
 
-    t_num    = LexNode(r'[0-9]+', Num, float)
-    t_blank  = LexNode(r' +', Blank, discard=True)
+    t_num    = LexTok(r'[0-9]+', Num, float)
+    t_blank  = LexTok(r' +', Blank, discard=True)
 
-    expression.add(t_plus, t_minus, t_lparen, t_num, 
-    t_blank, t_rparen, t_mul, t_div)
-
-    root = [expression]
+    root = [t_plus, t_minus, t_lparen, t_num, 
+    t_blank, t_rparen, t_mul, t_div]
 
 class CalcGrammar(Grammar):
-    # The grammar struct.
-    expression = Struct()
-
     # The token patterns when matched them become
     # ParseTree objects which have a type.
     r_paren = Rule(LP, Num, RP, type=Num)
@@ -43,8 +35,7 @@ class CalcGrammar(Grammar):
     # consumed then the process stops.
     r_done  = Rule(Sof, Num, Eof)
 
-    expression.add(r_paren, r_plus, r_minus, r_mul, r_div, r_done)
-    root = [expression]
+    root = [r_paren, r_plus, r_minus, r_mul, r_div, r_done]
 
 # The handles mapped to the patterns to compute the expression result.
 def plus(expr, sign, term):
@@ -67,6 +58,7 @@ def done(sof, num, eof):
     return num.val()
 
 data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))' 
+
 lexer  = Lexer(CalcTokens)
 tokens = lexer.feed(data)
 eacc   = Eacc(CalcGrammar)

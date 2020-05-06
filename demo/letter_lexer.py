@@ -9,16 +9,14 @@ In the below example it generates an error due to mixing up
 digits.
 """
 
-from eacc.lexer import Lexer, LexMap, LexNode, XSpec
+from eacc.lexer import Lexer, LexTok, XSpec
 from eacc.token import Letter, Blank
 
 class LetterTokens(XSpec):
-    lexmap   = LexMap()
-    t_blank  = LexNode(r' +', Blank)
-    t_letter = LexNode(r'[a-zA-Z]', Letter)
+    t_blank  = LexTok(r' +', Blank)
+    t_letter = LexTok(r'[a-zA-Z]', Letter)
 
-    lexmap.add(t_letter, t_blank)
-    root = [lexmap]
+    root = [t_letter, t_blank]
 
 print('Example 1')
 lex = Lexer(LetterTokens)

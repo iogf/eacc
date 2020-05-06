@@ -88,6 +88,7 @@ class LinkedList:
     __repr__ = __str__
 
 class Slice:
+    __slots__ = ['start', 'end', 'index']
     def __init__(self, start, end):
         self.start = start
         self.end = end
@@ -221,9 +222,9 @@ class Eacc:
         """
         """
         for ind in self.root:
-            ptree = ind.consume(tokens)
-            if ptree:
-                return ptree
+           ptree = tokens.match(ind)
+           if ptree:
+               return ptree
                                                         
     def handle_error(self, tokens):
         """
@@ -241,34 +242,6 @@ class Eacc:
         """
         """
         rule.hmap = handle
-
-class Struct:
-    def __init__(self):
-        super(Struct, self).__init__()
-        self.rules = []
-
-    def istype(self, tok):
-        if self is tok.type:
-            return tok
-
-    def validate(self, slc):
-        tok = slc.get()
-        if tok and tok.type is self:
-            return tok
-
-    def consume(self, tokens):
-        """
-        """
-        
-        for ind in self.rules:
-           ptree = tokens.match(ind)
-           if ptree:
-               return ptree
-   
-    def add(self, *args):
-        """
-        """
-        self.rules.extend(args)
 
 class Rule:
     def __init__(self, *args, up=(), type=None):

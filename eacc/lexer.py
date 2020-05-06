@@ -8,154 +8,129 @@ class XSpec:
     pass
 
 class Lexer:
-    def __init__(self, xspec):
+    def __init__(self, xspec, no_errors=False):
         """
         """
         self.root = xspec.root
-
-    def feed(self, data):
-        """
-        """
-        tseq = self.process(data)
-        lmb  = lambda ind: not ind.discard
-        tseq = filter(lmb, tseq)
-        
-        yield from tseq
-
-    def process(self, data):
-        pos = 0
-        while True:
-            tseq = self.consume(data, pos)
-            if tseq:
-                yield from tseq
-                pos = tseq[-1].end
-            elif pos != len(data):
-                self.handle_error(data, pos)
-            else:
-                break
-
-    def consume(self, data, pos):
-        """
-        """
-        for ind in self.root:
-            tseq = ind.consume(data, pos)
-            if tseq:
-                return tseq
+        self.regstr   = ''
+        self.regex    = None
+        self.regdict  = {}
+        self.build_regex()
+        self.no_errors = no_errors
 
     def handle_error(self, data, pos):
         msg = 'Unexpected token: %s' % repr(data[pos:pos+30])
         raise LexError(msg)
 
-class LexMap(XNode):
-    def __init__(self):
+    def feed(self, data):
         """
         """
-        self.children = []
-        super(LexMap, self).__init__()
+        pos = 0
+        regdict = self.regdict
+        regobj  = self.regex.finditer(data)
 
-    def add(self, *args):
-        self.children.extend(args)
+        for ind in regobj:
+            if pos != ind.start():
+                if not self.no_errors:
+                    raise self.handle_error(data, pos)
+            pos = ind.end()
+            mktoken = regdict.get(ind.lastgroup)
+            if mktoken:
+                yield from mktoken(ind)
 
-    def is_rulemap(self):
-        return True
+    def build_regex(self):
+        regdict = ((ind.gname, ind.mktoken)
+        for ind in self.root)
 
-    def consume(self, data, pos, exclude=()):
-        """
-        """
-        for ind in self.children:
-            if not ind in exclude:
-                tseq = ind.consume(data, pos, exclude)
-                if tseq:
-                    return tseq
+        self.regdict = dict(regdict)
+        regstr = (ind.mkindex() for ind in self.root)
+
+        self.regstr = '|'.join(regstr)
+        self.regex  = re.compile(self.regstr, 0)
 
     def __repr__(self):
         return 'LexMap(%s)' % self.children
 
-class R(XNode):
-    def __init__(self, lex, min=1, max=9999999999999):
-        """
-        R stands for Repeat. It makes sure a given lexical
-        condition happens n times where min < n < max or min < n.
-        """
-
-        self.lex = lex
-        self.min = min
-        self.max = max
-
-    def is_rulemap(self):
-        return self.lex.is_rulemap()
-
-    def consume(self, data, pos, exclude=()):
-        tseq  = TSeq()
-        count = 0
-        while True:
-            token = self.lex.consume(data, pos, exclude)
-            if token:
-                tseq.extend(token)
-            elif self.min <= count < self.max:
-                break
-            else:
-                return None
-            pos = token[-1].end
-            count += 1
-        return tseq
-
-class LexNode(XNode):
-    def __init__(self, regstr, type=TokVal, cast=None, discard=False):
+class LexTok(XNode):
+    def __init__(self, regstr, type=TokVal, cast=None, discard=False, wrapper=None):
         """
         """
         super(XNode, self).__init__()
-        self.regex  = re.compile(regstr)
-        self.regstr = regstr
-        self.type   = type
-        self.cast   = cast
-        self.match  = self.regex.match
+        self.regstr  = regstr
+        self.type    = type
         self.discard = discard
+        self.gname   = self.mkgname()
 
-    def is_rulemap(self):
-        return False
+        self.cast = (lambda data, type, value, 
+        start, end: Token(data, type, cast(value), 
+        start, end)) if cast else Token
 
-    def consume(self, data, pos, exclude=()):
-        regobj = self.match(data, pos)
-        if regobj:
-            return TSeq((Token(regobj.group(), self.type, 
-                self.cast, regobj.start(), regobj.end(), self.discard), ))
-    
+        if wrapper:
+            self.mktoken = lambda regobj: wrapper(self, regobj)
+
+    def mkgname(self):
+        gname = 'LN%s' % id(self)
+        return gname
+
+    def mkindex(self):
+        gname = self.mkgname()
+        if self.discard:
+            return self.regstr
+        else:
+            return '(?P<%s>%s)' % (gname, self.regstr)
+
+    def mktoken(self, regobj):
+        mstr = regobj.group()
+
+        return (self.cast(mstr, self.type, 
+            mstr, regobj.start(), regobj.end()), )
+
     def __repr__(self):
-        return 'SeqNode(%s(%s))' % (
+        return 'SeqTok(%s(%s))' % (
             self.type.__name__, repr(self.regstr))
 
-class SeqNode(LexNode):
+class SeqTok(LexTok):
     def __init__(self, regstr, type=TokVal, cast=None, discard=False):
-        super(SeqNode, self).__init__(regstr, type, cast, discard)
+        super(SeqTok, self).__init__(regstr, type, cast, discard)
 
-    def is_rulemap(self):
-        return False
+    def mkgname(self):
+        gname = 'SN%s' % id(self)
+        return gname
+
+    def mktoken(self, regobj):
+        mstr = regobj.group(self.gname)
+        start, end = regobj.span(self.gname)
+
+        return (self.cast(mstr, self.type, 
+            mstr, start, end), )
 
 class LexSeq(XNode):
-    def __init__(self, *args):
+    def __init__(self, *args, wrapper=None):
         self.args = args
+        self.gname = self.mkgname()
 
-    def fix_exclusion(self, exclude, index):
-        if not index or self.args[index - 1].is_rulemap():
-            return exclude + (self, )
+        if wrapper:
+            self.mktoken = lambda regobj: wrapper(self, regobj)
+
+    def mkgname(self):
+        gname = 'LS%s' % id(self)
+        return gname
+
+    def mkindex(self):
+        gname  = self.mkgname()
+        regex  = ''.join((ind.mkindex() for ind in self.args))
+        isdisc = all(map(lambda ind: ind.discard, self.args))
+
+        if isdisc:
+            return regex
         else:
-            return ()
+            return '(?P<%s>%s)' % (gname, regex)
 
-    def is_rulemap(self):
-        return False
-    
-    def consume(self, data, pos, exclude=()):
-        tseq  = TSeq()
-        for ind in range(0, len(self.args)):
-            token = self.args[ind].consume(data, 
-            pos, self.fix_exclusion(exclude, ind))
-            if token != None:
-                tseq.extend(token)
-            else:
-                return None
-            if tseq:
-                pos = tseq[-1].end
+    def mktoken(self, regobj):
+        tseq = TSeq()
+        for ind in self.args:
+            if not ind.discard:
+                tseq.extend(ind.mktoken(regobj))
         return tseq
 
     def __repr__(self):
