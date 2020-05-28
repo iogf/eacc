@@ -14,47 +14,42 @@ class SymTree:
         self.nodes = []
 
         for ind in rules:
-            self.update(ind)
+            self.update(iter(ind.args), ind)
 
-    def consume(self, llist):
-        data = []
+    def validate(self, llist, data):
+        pass
+
+    def consume(self, llist, data=[]):
         for ind in self.nodes:
-            data = ind.process(data, llist)
+            data = ind.validate(llist, data)
             if data:
                 return data
 
-    def update(self, rule):
-        pattern = iter(rule.args)
-        op = next(pattern)
+    def append(self, pattern, rule):
+        op = next(pattern, rule)
 
         for ind in self.nodes:
-            if ind.is_equal(op):
-                return ind.append(op, pattern, rule)
+            if ind.istype(op):
+                return ind.append(pattern)
 
         node = OpNode(op)
         node.append(pattern)
         self.nodes.append(node)
         return node
 
-class OpNode:
+class OpNode(SymTree):
     def __init__(self, op):
         self.op = op
         self.kmap = []
 
-    def process(self, data, llist):
-        self.consume(data, llist)
+    def validate(self, llist, data):
+        token = self.op.validate(llist)
+        if not token: 
+            return None
 
-    def consume(self, data, llist):
-        for ind in self.nodes:
-            data = ind.process(data, llist)
-            if data:
-                return data
+        data.append(token)
+        self.consume(llist, data)
 
-    def append(self, pattern):
-        op = next(pattern)
-        for ind in self.nodes:
-            if ind.is_equal(op):
-                return ind.append(op, pattern)
 
 class Eacc:
     def __init__(self, grammar, no_errors=False):
@@ -72,11 +67,11 @@ class Eacc:
         llist = LinkedList()
         llist.expnd(tseq)
 
-        ptree = self.consume(tokens)
+        ptree = self.consume(llist)
         yield from ptree
 
-        if not (tokens.linked.empty() and self.no_errors):
-            self.handle_error(tokens)
+        if not (llist.empty() and self.no_errors):
+            self.handle_error(llist)
 
     def consume(self, llist):
         while True:
@@ -91,10 +86,10 @@ class Eacc:
                 llist.get()
 
     def reduce(self, index, llist, ptree):
-        self.delete(index, llindex)
+        self.delete(index, llist.index)
         if ptree.type:
-            self.insert(llindex, ptree)
-        lindex.index = self.first()
+            self.insert(llist.index, ptree)
+        llist.index = self.first()
 
     def extend(self, *rules):
         pass
@@ -130,7 +125,7 @@ class Rule:
     def startswith(self, llist):
         pass
 
-    def precedence(self, llist):
+    def validate(self, llist):
         """
         """
 
@@ -140,9 +135,16 @@ class Rule:
                 return False
         return True
  
-    def consume(self, data, llist):
+    def consume(self, llist, data):
+        valid = self.validate(llist)
+        if not valid: 
+            return None
+
         ptree = PTree(self.type)
         ptree.extend(data)
+
+        ## Warning.
+        ptree.eval(self.hmap)
         return ptree
 
 class T:
