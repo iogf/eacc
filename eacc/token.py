@@ -10,10 +10,11 @@ class PTree(list):
     """
     __slots__ = ['type', 'result', 'data']
 
-    def __init__(self, type):
+    def __init__(self, type, rule=None):
         super(PTree, self).__init__()
         self.type = type
         self.data = type
+        self.rule = rule
         self.result = None
 
     def eval(self, handle):

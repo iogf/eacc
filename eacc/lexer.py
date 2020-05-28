@@ -1,4 +1,4 @@
-from eacc.token import *
+from eacc.token import XNode, Token, TokVal, TSeq
 import re
 
 class LexError(Exception):
@@ -50,6 +50,7 @@ class Lexer:
 
     def __repr__(self):
         return 'LexMap(%s)' % self.children
+
 
 class LexTok(XNode):
     def __init__(self, regstr, type=TokVal, cast=None, discard=False, wrapper=None):
