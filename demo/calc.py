@@ -36,6 +36,7 @@ class CalcGrammar(Grammar):
     r_done  = Rule(Sof, Num, Eof)
 
     root = [r_paren, r_plus, r_minus, r_mul, r_div, r_done]
+    # root = [r_done, r_plus]
 
 # The handles mapped to the patterns to compute the expression result.
 def plus(expr, sign, term):
@@ -58,6 +59,7 @@ def done(sof, num, eof):
     return num.val()
 
 data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))' 
+# data = '1+1'
 
 lexer  = Lexer(CalcTokens)
 tokens = lexer.feed(data)

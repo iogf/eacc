@@ -25,30 +25,10 @@ class LinkedList:
         self.last = LastNode()
         self.head.next = self.last
         self.last.back = self.head
-        self.index  = None
 
     def expand(self, elems):
         for ind in elems:
             self.append(ind)
-        self.index = self.first()
-
-    def reset(self):
-        self.index = self.linked.first()
-
-    def seek(self):
-        self.index = self.next(self.index)
-
-    def get(self):
-        index = self.index
-        self.seek()
-
-        if index is self.last:
-            return None
-        else:
-            return index.next
-
-    def tell(self):
-        return self.index
 
     def append(self, elem):
         lnode = LinkedNode(elem, self.last.back, self.last)
@@ -101,3 +81,21 @@ class LinkedList:
         return data.__str__()
 
     __repr__ = __str__
+
+class Slice:
+    __slots__ = ['head', 'last', 'index']
+    def __init__(self, head, last):
+        self.head = head
+        self.last = last
+        self.index = head
+
+    def get(self):
+        if self.index == self.last:
+            return None
+
+        elem = self.index.elem
+        return elem
+
+    def seek(self):
+        if self.index != self.last:
+            self.index = self.index.next

@@ -1,5 +1,5 @@
-from eacc.token import PTree, Sof, Eof, Token
-from eacc.llist import LinkedList
+from eacc.token import PTree, Sof, Eof, Token, TokType
+from eacc.llist import LinkedList, Slice
 from itertools import chain
 
 class EaccError(Exception):
@@ -14,82 +14,112 @@ class SymTree:
         self.nodes = []
 
         for ind in rules:
-            self.update(iter(ind.args), ind)
+            self.update(chain(iter(ind.args), (ind, )))
+        # print(self.nodes)
 
-    def validate(self, llist, data):
-        pass
-
-    def consume(self, llist, data=[]):
+    def match(self, llist, data=[]):
         for ind in self.nodes:
-            data = ind.validate(llist, data)
-            if data:
-                return data
+            index = llist.index
+            token = ind.validate(llist, data)
+            if token:
+                return token
+            else:
+                llist.index = index
 
-    def append(self, pattern, rule):
-        op = next(pattern, rule)
+    def update(self, pattern):
+        op = next(pattern, None)
+        if not op:
+            return None
 
         for ind in self.nodes:
             if ind.istype(op):
-                return ind.append(pattern)
-
+                return ind.update(pattern)
         node = OpNode(op)
-        node.append(pattern)
         self.nodes.append(node)
-        return node
+        node.update(pattern)
 
 class OpNode(SymTree):
     def __init__(self, op):
+        self.nodes = []
         self.op = op
-        self.kmap = []
+        self.istype = op.istype
 
     def validate(self, llist, data):
-        token = self.op.validate(llist)
+        # print('Validate:', self.op, '==', llist.get(), ' ', data)
+
+        token = self.op.validate(llist, data)
         if not token: 
             return None
 
-        data.append(token)
-        self.consume(llist, data)
+        if not self.nodes:
+            return token
 
+        ## Warning.
+        # data.append(token)
+        return self.match(llist, data + [token])
+
+    def __repr__(self):
+        return '(Op: %s\nChildren:%s)' % (repr(self.op), repr(self.nodes))
 
 class Eacc:
     def __init__(self, grammar, no_errors=False):
         self.root = grammar.root
         self.no_errors = no_errors
         self.symtree = SymTree(self.root)
+        self.index  = None
+        self.llist = LinkedList()
+
+    def reset(self):
+        self.index = self.llist.first()
+
+    def seek(self):
+        self.index = self.llist.next(self.index)
+
+    def get(self):
+        if self.index == self.llist.last:
+            return None
+        else:
+            self.index.elem
+
+    def tell(self):
+        return self.index
 
     def build(self, tseq):
         """
         """
 
         tseq = chain((Token('', Sof), ), 
-        tseq, (Token('', Eof, ),))
+        tseq, (Token('', Eof), ))
 
-        llist = LinkedList()
-        llist.expnd(tseq)
+        self.llist.expand(tseq)
+        self.index = self.llist.first()
 
-        ptree = self.consume(llist)
+        ptree = self.process()
         yield from ptree
 
-        if not (llist.empty() and self.no_errors):
-            self.handle_error(llist)
+        if not self.llist.empty() and not self.no_errors:
+            self.handle_error(self.llist)
 
-    def consume(self, llist):
+    def process(self):
         while True:
-            index = llist.index
-            ptree = self.symtree.consume(llist)
+            lslc  = Slice(self.index, self.llist.last)
+            ptree = self.symtree.match(lslc)
             if ptree:
-                self.reduce(index, llist, ptree)
+                self.reduce(lslc.index, ptree)
                 yield ptree
-            elif index.islast():
+            elif self.llist.empty():
                 break
+            elif not self.index.islast():
+                self.seek()
             else:
-                llist.get()
+                break
 
-    def reduce(self, index, llist, ptree):
-        self.delete(index, llist.index)
+    def reduce(self, lindex, ptree):
+        self.llist.delete(self.index, lindex)
+
         if ptree.type:
-            self.insert(llist.index, ptree)
-        llist.index = self.first()
+            self.llist.insert(lindex, ptree)
+        self.reset()
 
     def extend(self, *rules):
         pass
@@ -111,7 +141,7 @@ class Eacc:
         """
         rule.hmap = handle
 
-class Rule:
+class Rule(TokType):
     def __init__(self, *args, up=(), type=None):
         """
         """
@@ -122,27 +152,30 @@ class Rule:
 
         self.up.extend(up)
 
-    def startswith(self, llist):
-        pass
+    def startswith(self, llist, data):
+        for ind in self.args:
+            token = ind.validate(llist, data)
+            if not token:
+                return False
+        return True
 
-    def validate(self, llist):
-        """
-        """
-
+    def precedence(self, llist, data):
         for ind in self.up:
-            ptree = ind.startswith(llist)
-            if ptree:
+            slc = Slice(llist.index, llist.last)
+            prec = ind.startswith(slc, data)
+            if prec:
                 return False
         return True
  
-    def consume(self, llist, data):
-        valid = self.validate(llist)
+    def validate(self, llist, data):
+        valid = self.precedence(llist, data)
         if not valid: 
             return None
 
         ptree = PTree(self.type)
         ptree.extend(data)
-
+        # print('ptree', ptree)
+        # print('args:', self.args)
         ## Warning.
         ptree.eval(self.hmap)
         return ptree

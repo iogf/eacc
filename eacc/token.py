@@ -8,7 +8,7 @@ class XNode:
 class PTree(list):
     """
     """
-    __slots__ = ['type', 'result', 'data']
+    __slots__ = ['type', 'result', 'data', 'rule']
 
     def __init__(self, type, rule=None):
         super(PTree, self).__init__()
@@ -49,14 +49,16 @@ class TSeq(list):
 
 class TokType:
     @classmethod
-    def validate(cls, slc):
-        tok = slc.get()
-        if tok and cls.istype(tok):
-            return tok
+    def validate(cls, slc, data):
+        token  = slc.get()
+        if not (token and token.type is cls):
+            return None
+        slc.seek()
+        return token
 
     @classmethod
-    def istype(cls, tok):
-        return tok.type is cls
+    def istype(cls, toktype):
+        return toktype is cls
 
 class TokVal:
     def __init__(self, data):
