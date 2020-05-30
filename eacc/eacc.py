@@ -97,12 +97,10 @@ class Eacc:
             if ptree:
                 self.reduce(lslc.index, ptree)
                 yield ptree
-            elif self.llist.empty():
+            elif self.index.islast():
                 break
-            elif not self.index.islast():
-                self.seek()
             else:
-                break
+                self.seek()
 
     def reduce(self, lindex, ptree):
         self.llist.delete(self.index, lindex)
@@ -164,10 +162,11 @@ class Rule(TokType):
 
         ptree = PTree(self.type)
         ptree.extend(llist.items())
+        if self.hmap:
+            ptree.result = self.hmap(*ptree)
+
         # print('ptree', ptree)
         # print('args:', self.args)
-        ## Warning.
-        ptree.eval(self.hmap)
         return ptree
 
 class T:

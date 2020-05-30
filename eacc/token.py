@@ -8,18 +8,13 @@ class XNode:
 class PTree(list):
     """
     """
-    __slots__ = ['type', 'result', 'data', 'rule']
+    __slots__ = ['type', 'result', 'data']
 
-    def __init__(self, type, rule=None):
+    def __init__(self, type):
         super(PTree, self).__init__()
         self.type = type
         self.data = type
-        self.rule = rule
         self.result = None
-
-    def eval(self, handle):
-        if handle:
-            self.result = handle(*self)
 
     def val(self):
         return self.result

@@ -102,6 +102,6 @@ class Slice:
 
     def items(self):
         index = self.head
-        while index != self.index and (not index.islast()):
+        while index != self.index:
             yield index.elem
             index = index.next
