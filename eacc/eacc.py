@@ -12,17 +12,41 @@ class SymTree:
     def __init__(self, rules=[]):
         self.rules = rules
         self.nodes = []
+        self.stack = []
+        self.data  = []
 
         for ind in rules:
             self.update(chain(iter(ind.args), (ind, )))
-        # print(self.nodes)
 
     def match(self, llist, data=[]):
+        self.stack.clear()
+        self.data.clear()
+        seq = self.find_opnode(llist, self.data)
+        self.stack.append(seq)
+
+        while True:
+            seq = self.stack[-1]
+            opnode, token = next(seq, (None, None))
+
+            if opnode:
+                if not opnode.nodes:
+                    return token
+                seq = opnode.find_opnode(llist, self.data)
+                self.stack.append(seq)
+                self.data.append(token)
+            elif self.stack and len(self.stack) > 1:
+                seq = self.stack.pop()
+                if self.data:
+                    self.data.pop()
+            else:
+                break
+
+    def find_opnode(self, llist, data):
+        index = llist.index
         for ind in self.nodes:
-            index = llist.index
-            token = ind.validate(llist, data)
+            token = ind.op.validate(llist, data)
             if token:
-                return token
+                yield (ind, token)
             else:
                 llist.index = index
 
@@ -44,20 +68,6 @@ class OpNode(SymTree):
         self.op = op
         self.istype = op.istype
 
-    def validate(self, llist, data):
-        # print('Validate:', self.op, '==', llist.get(), ' ', data)
-
-        token = self.op.validate(llist, data)
-        if not token: 
-            return None
-
-        if not self.nodes:
-            return token
-
-        ## Warning.
-        # data.append(token)
-        return self.match(llist, data + [token])
-
     def __repr__(self):
         return '(Op: %s\nChildren:%s)' % (repr(self.op), repr(self.nodes))
 
@@ -73,7 +83,8 @@ class Eacc:
         self.index = self.llist.first()
 
     def seek(self):
-        self.index = self.llist.next(self.index)
+        if self.index != self.llist.last:
+            self.index = self.index.next
 
     def get(self):
         if self.index == self.llist.last:
@@ -107,12 +118,10 @@ class Eacc:
             if ptree:
                 self.reduce(lslc.index, ptree)
                 yield ptree
-            elif self.llist.empty():
+            elif self.index.islast():
                 break
-            elif not self.index.islast():
-                self.seek()
             else:
-                break
+                self.seek()
 
     def reduce(self, lindex, ptree):
         self.llist.delete(self.index, lindex)
@@ -171,12 +180,9 @@ class Rule(TokType):
         valid = self.precedence(llist, data)
         if not valid: 
             return None
-
+        # print(data)
         ptree = PTree(self.type)
         ptree.extend(data)
-        # print('ptree', ptree)
-        # print('args:', self.args)
-        ## Warning.
         ptree.eval(self.hmap)
         return ptree
 
