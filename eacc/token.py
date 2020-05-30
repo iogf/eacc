@@ -49,7 +49,7 @@ class TSeq(list):
 
 class TokType:
     @classmethod
-    def validate(cls, slc, data):
+    def validate(cls, slc):
         token  = slc.get()
         if not (token and token.type is cls):
             return None

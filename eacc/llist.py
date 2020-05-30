@@ -99,3 +99,9 @@ class Slice:
     def seek(self):
         if self.index != self.last:
             self.index = self.index.next
+
+    def items(self):
+        index = self.head
+        while index != self.index and (not index.islast()):
+            yield index.elem
+            index = index.next

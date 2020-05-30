@@ -17,10 +17,10 @@ class SymTree:
             self.update(chain(iter(ind.args), (ind, )))
         # print(self.nodes)
 
-    def match(self, llist, data=[]):
+    def match(self, llist):
         for ind in self.nodes:
             index = llist.index
-            token = ind.validate(llist, data)
+            token = ind.validate(llist)
             if token:
                 return token
             else:
@@ -44,19 +44,15 @@ class OpNode(SymTree):
         self.op = op
         self.istype = op.istype
 
-    def validate(self, llist, data):
-        # print('Validate:', self.op, '==', llist.get(), ' ', data)
-
-        token = self.op.validate(llist, data)
+    def validate(self, llist):
+        token = self.op.validate(llist)
         if not token: 
             return None
 
         if not self.nodes:
             return token
 
-        ## Warning.
-        # data.append(token)
-        return self.match(llist, data + [token])
+        return self.match(llist)
 
     def __repr__(self):
         return '(Op: %s\nChildren:%s)' % (repr(self.op), repr(self.nodes))
@@ -74,12 +70,6 @@ class Eacc:
 
     def seek(self):
         self.index = self.llist.next(self.index)
-
-    def get(self):
-        if self.index == self.llist.last:
-            return None
-        else:
-            self.index.elem
 
     def tell(self):
         return self.index
@@ -152,28 +142,28 @@ class Rule(TokType):
 
         self.up.extend(up)
 
-    def startswith(self, llist, data):
+    def startswith(self, llist):
         for ind in self.args:
-            token = ind.validate(llist, data)
+            token = ind.validate(llist)
             if not token:
                 return False
         return True
 
-    def precedence(self, llist, data):
+    def precedence(self, llist):
         for ind in self.up:
             slc = Slice(llist.index, llist.last)
-            prec = ind.startswith(slc, data)
+            prec = ind.startswith(slc)
             if prec:
                 return False
         return True
  
-    def validate(self, llist, data):
-        valid = self.precedence(llist, data)
+    def validate(self, llist):
+        valid = self.precedence(llist)
         if not valid: 
             return None
 
         ptree = PTree(self.type)
-        ptree.extend(data)
+        ptree.extend(llist.items())
         # print('ptree', ptree)
         # print('args:', self.args)
         ## Warning.
