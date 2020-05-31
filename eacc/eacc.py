@@ -180,10 +180,11 @@ class Rule(TokType):
 
     def precedence(self, eacc):
         for ind in self.up:
-            slc = Slice(eacc.index, eacc.llist.last)
-            prec = ind.startswith(slc)
+            index = eacc.index
+            prec = ind.startswith(eacc)
             if prec:
                 return False
+            eacc.index = index
         return True
  
     def match(self, eacc):
