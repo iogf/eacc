@@ -8,54 +8,61 @@ class EaccError(Exception):
 class Grammar:
     pass
 
-class SymTree:
-    def __init__(self, rules=[]):
-        self.rules = rules
-        self.nodes = []
+class SymNode:
+    def __init__(self):
+        self.kmap = {}
+        self.ops  = []
 
-        for ind in rules:
-            self.update(chain(iter(ind.args), (ind, )))
-        # print(self.nodes)
+    def validate(self, llist):
+        for ind in self.ops:
+            node  = ind.match(llist)
+            if node:
+                return node
+
+        token = llist.get()
+        if token:
+            node  = self.kmap.get(token.type)
+            if node:
+                return node.match(llist)
+        llist.lseek()
 
     def match(self, llist):
-        for ind in self.nodes:
-            index = llist.index
-            token = ind.validate(llist)
-            if token:
-                return token
-            else:
-                llist.index = index
+        index = llist.index
+        token = self.validate(llist)
+        if token:
+            return token
+        else:
+            llist.index = index
 
-    def update(self, pattern):
-        op = next(pattern, None)
-        if not op:
-            return None
+    def __repr__(self):
+        return self.kmap.__repr__()
 
-        for ind in self.nodes:
-            if ind.istype(op):
-                return ind.update(pattern)
-        node = OpNode(op)
-        self.nodes.append(node)
-        node.update(pattern)
-
-class OpNode(SymTree):
+class OpNode(SymNode):
     def __init__(self, op):
-        self.nodes = []
         self.op = op
-        self.istype = op.istype
+        self.nodes = SymNode()
 
     def validate(self, llist):
         token = self.op.validate(llist)
-        if not token: 
-            return None
-
-        if not self.nodes:
+        if token:
             return token
 
-        return self.match(llist)
+class SymTree(SymNode):
+    def __init__(self, rules=[]):
+        super(SymTree, self).__init__()
+        self.rules = []
 
-    def __repr__(self):
-        return '(Op: %s\nChildren:%s)' % (repr(self.op), repr(self.nodes))
+        for ind in rules:
+            self.update(ind)
+
+    def update(self, rule):
+        pattern = iter(rule.args)
+        node = self
+
+        for ind in pattern:
+            node = node.kmap.setdefault(ind, SymNode())
+        node.ops.append(rule)
+        self.rules.append(rule)
 
 class Eacc:
     def __init__(self, grammar, no_errors=False):
@@ -155,18 +162,19 @@ class Rule(TokType):
                 return False
         return True
  
-    def validate(self, llist):
+    def match(self, llist):
         valid = self.precedence(llist)
         if not valid: 
             return None
 
         ptree = PTree(self.type)
         ptree.extend(llist.items())
+        # print('ptree', ptree)
+        # print('args:', self.args)
+
         if self.hmap:
             ptree.result = self.hmap(*ptree)
 
-        # print('ptree', ptree)
-        # print('args:', self.args)
         return ptree
 
 class T:

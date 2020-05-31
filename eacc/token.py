@@ -46,10 +46,8 @@ class TokType:
     @classmethod
     def validate(cls, slc):
         token  = slc.get()
-        if not (token and token.type is cls):
-            return None
-        slc.seek()
-        return token
+        if token and token.type is cls:
+            return token
 
     @classmethod
     def istype(cls, toktype):

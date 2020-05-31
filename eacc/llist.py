@@ -94,12 +94,19 @@ class Slice:
             return None
 
         elem = self.index.elem
+        if self.index != self.last:
+            self.index = self.index.next
+
         return elem
 
     def seek(self):
         if self.index != self.last:
             self.index = self.index.next
 
+    def lseek(self):
+        if self.index != self.head:
+            self.index = self.index.back
+        
     def items(self):
         index = self.head
         while index != self.index:
