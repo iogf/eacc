@@ -13,26 +13,26 @@ class SymNode:
         self.kmap = {}
         self.ops  = []
 
-    def validate(self, llist):
+    def validate(self, eacc):
         for ind in self.ops:
-            node  = ind.match(llist)
+            node  = ind.match(eacc)
             if node:
                 return node
 
-        token = llist.get()
+        token = eacc.get()
         if token:
             node  = self.kmap.get(token.type)
             if node:
-                return node.match(llist)
-        llist.lseek()
+                return node.match(eacc)
+        # llist.lseek()
 
-    def match(self, llist):
-        index = llist.index
-        token = self.validate(llist)
+    def match(self, eacc):
+        index = eacc.index
+        token = self.validate(eacc)
         if token:
             return token
         else:
-            llist.index = index
+            eacc.index = index
 
     def __repr__(self):
         return self.kmap.__repr__()
@@ -42,8 +42,8 @@ class OpNode(SymNode):
         self.op = op
         self.nodes = SymNode()
 
-    def validate(self, llist):
-        token = self.op.validate(llist)
+    def validate(self, eacc):
+        token = self.op.validate(eacc)
         if token:
             return token
 
@@ -71,15 +71,39 @@ class Eacc:
         self.symtree = SymTree(self.root)
         self.index  = None
         self.llist = LinkedList()
+        self.hpos = None
 
     def reset(self):
         self.index = self.llist.first()
+        self.hpos = self.index
 
     def seek(self):
         self.index = self.llist.next(self.index)
 
+    def get(self):
+        if self.index == self.llist.last:
+            return None
+
+        elem = self.index.elem
+        self.index = self.index.next
+        return elem
+
+    def shift(self):
+        self.hpos = self.llist.next(self.hpos)
+        self.index = self.hpos
+
+    def lseek(self):
+        if self.index != self.llist.head:
+            self.index = self.index.back
+
     def tell(self):
         return self.index
+
+    def items(self):
+        index = self.hpos
+        while index != self.index:
+            yield index.elem
+            index = index.next
 
     def build(self, tseq):
         """
@@ -90,6 +114,7 @@ class Eacc:
 
         self.llist.expand(tseq)
         self.index = self.llist.first()
+        self.hpos  = self.index
 
         ptree = self.process()
         yield from ptree
@@ -99,21 +124,20 @@ class Eacc:
 
     def process(self):
         while True:
-            lslc  = Slice(self.index, self.llist.last)
-            ptree = self.symtree.match(lslc)
+            ptree = self.symtree.match(self)
             if ptree:
-                self.reduce(lslc.index, ptree)
+                self.reduce(ptree)
                 yield ptree
-            elif self.index.islast():
+            elif self.hpos.islast():
                 break
             else:
-                self.seek()
+                self.shift()
 
-    def reduce(self, lindex, ptree):
-        self.llist.delete(self.index, lindex)
+    def reduce(self, ptree):
+        self.llist.delete(self.hpos, self.index)
 
         if ptree.type:
-            self.llist.insert(lindex, ptree)
+            self.llist.insert(self.index, ptree)
         self.reset()
 
     def extend(self, *rules):
@@ -147,28 +171,28 @@ class Rule(TokType):
 
         self.up.extend(up)
 
-    def startswith(self, llist):
+    def startswith(self, eacc):
         for ind in self.args:
-            token = ind.validate(llist)
+            token = ind.validate(eacc)
             if not token:
                 return False
         return True
 
-    def precedence(self, llist):
+    def precedence(self, eacc):
         for ind in self.up:
-            slc = Slice(llist.index, llist.last)
+            slc = Slice(eacc.index, eacc.llist.last)
             prec = ind.startswith(slc)
             if prec:
                 return False
         return True
  
-    def match(self, llist):
-        valid = self.precedence(llist)
+    def match(self, eacc):
+        valid = self.precedence(eacc)
         if not valid: 
             return None
 
         ptree = PTree(self.type)
-        ptree.extend(llist.items())
+        ptree.extend(eacc.items())
         # print('ptree', ptree)
         # print('args:', self.args)
 
