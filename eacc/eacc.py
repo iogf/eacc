@@ -73,6 +73,7 @@ class Eacc:
         self.index  = None
         self.llist = LinkedList()
         self.hpos = None
+        self.handles = {}
 
     def reset(self):
         self.index = self.llist.first()
@@ -154,12 +155,14 @@ class Eacc:
     def add_handle(self, rule, handle):
         """
         """
-        rule.hmap = handle
 
-    def del_handle(self, rule, handle):
+        self.handles[rule] = handle
+
+    def del_handle(self, rule):
         """
         """
-        rule.hmap = handle
+
+        del self.handles[rule] 
 
 class Rule(TokType):
     def __init__(self, *args, up=(), type=None):
@@ -167,7 +170,6 @@ class Rule(TokType):
         """
         self.args = args
         self.type = type
-        self.hmap = None
         self.up   = []
 
         self.up.extend(up)
@@ -198,9 +200,9 @@ class Rule(TokType):
         # print('ptree', ptree)
         # print('args:', self.args)
 
-        if self.hmap:
-            ptree.result = self.hmap(*ptree)
-
+        hmap = eacc.handles.get(self, None)
+        if hmap:
+            ptree.result = hmap(*ptree)
         return ptree
 
 class T:
