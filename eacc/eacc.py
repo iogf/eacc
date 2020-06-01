@@ -14,17 +14,18 @@ class SymNode:
         self.ops  = []
 
     def validate(self, eacc):
+        token = eacc.get()
+        if token != None:
+            node  = self.kmap.get(token.type)
+            if node:
+                return node.match(eacc)
+            else:
+                eacc.lseek()
+
         for ind in self.ops:
             node  = ind.match(eacc)
             if node:
                 return node
-
-        token = eacc.get()
-        if token:
-            node  = self.kmap.get(token.type)
-            if node:
-                return node.match(eacc)
-        # llist.lseek()
 
     def match(self, eacc):
         index = eacc.index
@@ -134,10 +135,10 @@ class Eacc:
                 self.shift()
 
     def reduce(self, ptree):
-        self.llist.delete(self.hpos, self.index)
-
         if ptree.type:
-            self.llist.insert(self.index, ptree)
+            self.llist.sub(self.hpos, self.index, ptree)
+        else:
+            self.llist.delete(self.hpos, self.index)
         self.reset()
 
     def extend(self, *rules):

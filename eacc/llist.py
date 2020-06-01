@@ -42,6 +42,11 @@ class LinkedList:
         self.head.next = lnode
         return lnode
 
+    def sub(self, index, lindex, elem):
+        lnode = LinkedNode(elem, index.back, lindex)
+        index.back.next = lnode
+        lindex.back = lnode
+
     def insert(self, index, elem):
         lnode = LinkedNode(elem, index.back, index)
         index.back.next = lnode
