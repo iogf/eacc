@@ -13,23 +13,28 @@ class SymNode:
         self.kmap = {}
         self.ops  = []
 
-    def validate(self, eacc):
+    def validate(self, eacc, data):
         token = eacc.get()
         if token != None:
             node  = self.kmap.get(token.type)
             if node:
-                return node.match(eacc)
+                return node.match(eacc, data + [token])
             else:
                 eacc.lseek()
 
         for ind in self.ops:
-            node  = ind.match(eacc)
+            node  = ind.match(eacc, data)
             if node:
                 return node
 
-    def match(self, eacc):
+    def reduce(self, eacc, token):
+        node  = self.kmap.get(token.type)
+        if node:
+            return node.match(eacc, [token])
+        
+    def match(self, eacc, data=[]):
         index = eacc.index
-        token = self.validate(eacc)
+        token = self.validate(eacc, data)
         if token:
             return token
         else:
@@ -124,17 +129,28 @@ class Eacc:
             self.handle_error(self.llist)
 
     def process(self):
+        match = self.symtree.match
         while True:
-            ptree = self.symtree.match(self)
+            ptree = match(self)
             if ptree:
-                self.reduce(ptree)
-                yield ptree
+                block = self.join(ptree)
+                yield block
+                self.replace(block)
             elif self.hpos.islast():
                 break
             else:
                 self.shift()
 
-    def reduce(self, ptree):
+    def join(self, ptree):
+        reduce = self.symtree.reduce
+        tmp = ptree
+        while True:
+            tmp = reduce(self, tmp)
+            if not tmp or not tmp.type:
+                return ptree
+            ptree = tmp
+
+    def replace(self, ptree):
         if ptree.type:
             self.llist.sub(self.hpos, self.index, ptree)
         else:
@@ -188,13 +204,13 @@ class Rule(TokType):
             eacc.index = index
         return True
  
-    def match(self, eacc):
+    def match(self, eacc, data):
         valid = self.precedence(eacc)
         if not valid: 
             return None
 
         ptree = PTree(self.type)
-        ptree.extend(eacc.items())
+        ptree.extend(data)
         # print('ptree', ptree)
         # print('args:', self.args)
 
@@ -204,6 +220,20 @@ class Rule(TokType):
         return ptree
 
 class T:
+    def __init__(self, token, min=1, max=9999999999999):
+        self.token = token
+        self.min = min
+
+        self.max = max
+
+class E:
+    def __init__(self, token, min=1, max=9999999999999):
+        self.token = token
+        self.min = min
+
+        self.max = max
+
+class Dot:
     def __init__(self, token, min=1, max=9999999999999):
         self.token = token
         self.min = min
