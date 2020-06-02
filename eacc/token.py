@@ -44,11 +44,14 @@ class TSeq(list):
 
 class TokType:
     @classmethod
-    def validate(cls, slc):
-        token  = slc.get()
-        if token and token.type is cls:
-            return token
+    def opexec(cls, eacc):
+        token  = eacc.tell()
+        if not (token and token.type is cls):
+            return False
 
+        eacc.seek()
+        return True
+        
     @classmethod
     def istype(cls, toktype):
         return toktype is cls
@@ -58,8 +61,8 @@ class TokVal:
         self.data = data
         self.type = TokVal
 
-    def validate(self, slc):
-        tok = slc.get()
+    def opexec(self, slc):
+        token = slc.get()
         if tok and self.istype(tok):
             return tok
 

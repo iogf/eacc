@@ -25,11 +25,13 @@ def done(sof, expr, eof):
     print('Result:', expr)
 
 print('Example 1')
+data   = '(1 1 1)'
+
 lexer  = Lexer(TupleTokens)
+tokens = lexer.feed(data)
 eacc   = Eacc(TupleGrammar)
+
+ptree  = eacc.build(tokens)
 eacc.add_handle(TupleGrammar.r_done, done)
 
-data   = '(1 (2 3) 4 (5 (6) 7))'
-tokens = lexer.feed(data)
-ptree  = eacc.build(tokens)
 ptree  = list(ptree)

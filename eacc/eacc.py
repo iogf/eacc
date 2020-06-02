@@ -13,40 +13,48 @@ class SymNode:
         self.kmap = {}
         self.ops  = []
 
-    def validate(self, eacc):
-        token = eacc.get()
-        if token != None:
-            node  = self.kmap.get(token.type)
-            if node:
-                return node.match(eacc)
-            else:
-                eacc.lseek()
-
+    def runops(self, eacc):
         for ind in self.ops:
-            node  = ind.match(eacc)
+            node  = ind.opexec(eacc)
             if node:
                 return node
 
     def match(self, eacc):
-        index = eacc.index
-        token = self.validate(eacc)
-        if token:
-            return token
-        else:
-            eacc.index = index
+        token = eacc.tell()
+        if not token:
+            return self.runops(eacc)
+
+        node = self.kmap.get(token.type)
+        if not node:
+            return self.runops(eacc)
+
+        eacc.seek()
+        node = node.match(eacc)
+        if node:
+            return node
+
+    def append(self, op):
+        node = OpNode(op)
+        self.ops.append(node)
+        return node
 
     def __repr__(self):
         return self.kmap.__repr__()
 
 class OpNode(SymNode):
     def __init__(self, op):
+        super(OpNode, self).__init__()
         self.op = op
-        self.nodes = SymNode()
 
-    def validate(self, eacc):
-        token = self.op.validate(eacc)
+    def opexec(self, eacc):
+        index = eacc.index
+        token = self.op.opexec(eacc)
+
         if token:
-            return token
+            node = self.match(eacc)
+            if node:
+                return node
+        eacc.index = index
 
 class SymTree(SymNode):
     def __init__(self, rules=[]):
@@ -61,7 +69,10 @@ class SymTree(SymNode):
         node = self
 
         for ind in pattern:
-            node = node.kmap.setdefault(ind, SymNode())
+            if not isinstance(ind, T):
+                node = node.kmap.setdefault(ind, SymNode())
+            else:
+                node = node.append(ind)
         node.ops.append(rule)
         self.rules.append(rule)
 
@@ -99,7 +110,8 @@ class Eacc:
             self.index = self.index.back
 
     def tell(self):
-        return self.index
+        if self.index != self.llist.last:
+            return self.index.elem
 
     def items(self):
         index = self.hpos
@@ -125,8 +137,10 @@ class Eacc:
             self.handle_error(self.llist)
 
     def process(self):
+        match = self.symtree.match
+
         while True:
-            ptree = self.symtree.match(self)
+            ptree = match(self)
             if ptree:
                 self.reduce(ptree)
                 yield ptree
@@ -176,7 +190,7 @@ class Rule(TokType):
 
     def startswith(self, eacc):
         for ind in self.args:
-            token = ind.validate(eacc)
+            token = ind.opexec(eacc)
             if not token:
                 return False
         return True
@@ -190,7 +204,7 @@ class Rule(TokType):
             eacc.index = index
         return True
  
-    def match(self, eacc):
+    def opexec(self, eacc):
         valid = self.precedence(eacc)
         if not valid: 
             return None
@@ -199,15 +213,28 @@ class Rule(TokType):
         ptree.extend(eacc.items())
         # print('ptree', ptree)
         # print('args:', self.args)
-
+        # print(ptree)
         hmap = eacc.handles.get(self, None)
         if hmap:
             ptree.result = hmap(*ptree)
         return ptree
 
-class T:
-    def __init__(self, token, min=1, max=9999999999999):
+class T(TokType):
+    def __init__(self, token, min=1, max=None):
         self.token = token
         self.min = min
 
         self.max = max
+
+    def opexec(self, eacc):
+        token = self.token
+        count = 0
+
+        while True:
+            result = token.opexec(eacc)
+            if not result:
+                if self.max:
+                    return self.min <= count <= self.max
+                return self.min <= count
+            count += 1
+
