@@ -188,24 +188,24 @@ class Rule(TokType):
 
         self.up.extend(up)
 
-    def startswith(self, eacc):
+    def startswith(self, eacc, data):
         for ind in self.args:
-            token = ind.opexec(eacc)
+            token = ind.opexec(eacc, data)
             if not token:
                 return False
         return True
 
-    def precedence(self, eacc):
+    def precedence(self, eacc, data):
         for ind in self.up:
             index = eacc.index
-            prec = ind.startswith(eacc)
+            prec = ind.startswith(eacc, data)
             if prec:
                 return False
             eacc.index = index
         return True
  
     def opexec(self, eacc, data):
-        valid = self.precedence(eacc)
+        valid = self.precedence(eacc, data)
         if not valid: 
             return None
 
