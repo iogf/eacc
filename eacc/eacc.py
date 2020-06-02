@@ -13,23 +13,23 @@ class SymNode:
         self.kmap = {}
         self.ops  = []
 
-    def runops(self, eacc):
+    def runops(self, eacc, data):
         for ind in self.ops:
-            node  = ind.opexec(eacc)
+            node  = ind.opexec(eacc, data)
             if node:
                 return node
 
-    def match(self, eacc):
+    def match(self, eacc, data=[]):
         token = eacc.tell()
         if not token:
-            return self.runops(eacc)
+            return self.runops(eacc, data)
 
         node = self.kmap.get(token.type)
         if not node:
-            return self.runops(eacc)
+            return self.runops(eacc, data)
 
         eacc.seek()
-        node = node.match(eacc)
+        node = node.match(eacc, data + [token])
         if node:
             return node
 
@@ -46,12 +46,12 @@ class OpNode(SymNode):
         super(OpNode, self).__init__()
         self.op = op
 
-    def opexec(self, eacc):
+    def opexec(self, eacc, data):
         index = eacc.index
-        token = self.op.opexec(eacc)
+        token = self.op.opexec(eacc, data)
 
         if token:
-            node = self.match(eacc)
+            node = self.match(eacc, data + [token])
             if node:
                 return node
         eacc.index = index
@@ -204,13 +204,13 @@ class Rule(TokType):
             eacc.index = index
         return True
  
-    def opexec(self, eacc):
+    def opexec(self, eacc, data):
         valid = self.precedence(eacc)
         if not valid: 
             return None
 
         ptree = PTree(self.type)
-        ptree.extend(eacc.items())
+        ptree.extend(data)
         # print('ptree', ptree)
         # print('args:', self.args)
         # print(ptree)
@@ -226,15 +226,17 @@ class T(TokType):
 
         self.max = max
 
-    def opexec(self, eacc):
+    def opexec(self, eacc, data):
         token = self.token
-        count = 0
+        ptree = PTree(None)
 
         while True:
-            result = token.opexec(eacc)
+            result = token.opexec(eacc, data)
             if not result:
                 if self.max:
-                    return self.min <= count <= self.max
-                return self.min <= count
-            count += 1
+                    if self.min <= len(ptree) <= self.max:
+                        return ptree
+                if self.min <= len(ptree):
+                    return ptree
+            ptree.append(result)
 

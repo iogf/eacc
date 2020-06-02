@@ -44,13 +44,13 @@ class TSeq(list):
 
 class TokType:
     @classmethod
-    def opexec(cls, eacc):
+    def opexec(cls, eacc, data):
         token  = eacc.tell()
         if not (token and token.type is cls):
-            return False
+            return None
 
         eacc.seek()
-        return True
+        return token
         
     @classmethod
     def istype(cls, toktype):
