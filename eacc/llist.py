@@ -59,9 +59,9 @@ class LinkedList:
         else:
             return index.next
 
-    def lst(self, index, lindex):
+    def items(self, index, lindex):
         while index != lindex:
-            yield index
+            yield index.elem
             index = index.next
 
     def back(self, index):
@@ -81,8 +81,8 @@ class LinkedList:
         return self.head.next
 
     def __str__(self):
-        data = self.lst(self.head.next, self.last)
-        data = list(map(lambda ind: ind.elem, data))
+        data = self.items(self.head.next, self.last)
+        data = list(data)
         return data.__str__()
 
     __repr__ = __str__

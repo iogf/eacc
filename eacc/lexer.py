@@ -38,6 +38,9 @@ class Lexer:
             if mktoken:
                 yield from mktoken(ind)
 
+        if not self.no_errors and pos != len(data):
+            raise self.handle_error(data, pos)
+
     def build_regex(self):
         regdict = ((ind.gname, ind.mktoken)
         for ind in self.root)

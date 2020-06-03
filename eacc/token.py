@@ -269,3 +269,33 @@ class Letter(TokType):
 
 class Pipe(TokType):
     pass
+
+class One(TokType):
+    pass
+
+class Two(TokType):
+    pass
+
+class Three(TokType):
+    pass
+
+class Four(TokType):
+    pass
+
+class Five(TokType):
+    pass
+
+class Six(TokType):
+    pass
+
+class Seven(TokType):
+    pass
+
+class Eight(TokType):
+    pass
+
+class Nine(TokType):
+    pass
+
+class Zero(TokType):
+    pass

@@ -1,5 +1,5 @@
 from eacc.lexer import Lexer, LexTok, XSpec
-from eacc.eacc import Grammar, Rule, T, Eacc
+from eacc.eacc import Grammar, Rule, Times, Eacc
 from eacc.token import Blank, Num, Sof, Eof, LP, RP
 
 class TupleTokens(XSpec):
@@ -13,7 +13,7 @@ class TupleTokens(XSpec):
 
 class TupleGrammar(Grammar):
     # It means to accumulate as many Num tokens as possible.
-    g_num = T(Num, min=1)
+    g_num = Times(Num, min=1)
 
     # Then we trigge such a pattern in this rule.
     r_paren = Rule(LP, g_num, RP, type=Num)

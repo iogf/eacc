@@ -8,6 +8,12 @@ class EaccError(Exception):
 class Grammar:
     pass
 
+class Operator(TokType):
+    def __eq__(self, other):
+        if not isinstance(self, other.__class__):
+            return False
+        return True
+
 class SymNode:
     def __init__(self):
         self.kmap = {}
@@ -56,6 +62,9 @@ class OpNode(SymNode):
                 return node
         eacc.index = index
 
+    def is_equal(self, other):
+        pass
+
 class SymTree(SymNode):
     def __init__(self, rules=[]):
         super(SymTree, self).__init__()
@@ -69,7 +78,7 @@ class SymTree(SymNode):
         node = self
 
         for ind in pattern:
-            if not isinstance(ind, T):
+            if not isinstance(ind, Operator):
                 node = node.kmap.setdefault(ind, SymNode())
             else:
                 node = node.append(ind)
@@ -112,12 +121,6 @@ class Eacc:
     def tell(self):
         if self.index != self.llist.last:
             return self.index.elem
-
-    def items(self):
-        index = self.hpos
-        while index != self.index:
-            yield index.elem
-            index = index.next
 
     def build(self, tseq):
         """
@@ -219,7 +222,7 @@ class Rule(TokType):
             ptree.result = hmap(*ptree)
         return ptree
 
-class T(TokType):
+class Times(Operator):
     def __init__(self, token, min=1, max=None):
         self.token = token
         self.min = min
@@ -227,11 +230,10 @@ class T(TokType):
         self.max = max
 
     def opexec(self, eacc, data):
-        token = self.token
         ptree = PTree(None)
 
         while True:
-            result = token.opexec(eacc, data)
+            result = self.token.opexec(eacc, data)
             if not result:
                 if self.max:
                     if self.min <= len(ptree) <= self.max:
@@ -240,3 +242,33 @@ class T(TokType):
                     return ptree
             ptree.append(result)
 
+    def __eq__(self, other):
+        pass
+
+class Except(Operator):
+    def __init__(self, *args):
+        self.args = args
+
+    def opexec(self, eacc, data):
+        token = eacc.tell()
+        if not token: 
+            return None
+
+        if token.type in self.args: 
+            return None
+
+        eacc.seek()
+        return token
+
+    def __eq__(self, other):
+        pass
+
+class Only(Operator):
+    def __init__(self, *args):
+        self.args = args
+
+    def opexec(self, eacc, data):
+        pass
+
+    def __eq__(self, other):
+        pass
