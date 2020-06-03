@@ -1,4 +1,4 @@
-from eacc.token import XNode, Token, TokVal, TSeq
+from eacc.token import XNode, Token, TSeq
 import re
 
 class LexError(Exception):
@@ -56,7 +56,9 @@ class Lexer:
 
 
 class LexTok(XNode):
-    def __init__(self, regstr, type=TokVal, cast=None, discard=False, wrapper=None):
+    def __init__(self, regstr, type=None, 
+        cast=None, discard=False, wrapper=None):
+
         """
         """
         super(XNode, self).__init__()
@@ -94,7 +96,7 @@ class LexTok(XNode):
             self.type.__name__, repr(self.regstr))
 
 class SeqTok(LexTok):
-    def __init__(self, regstr, type=TokVal, cast=None, discard=False):
+    def __init__(self, regstr, type=None, cast=None, discard=False):
         super(SeqTok, self).__init__(regstr, type, cast, discard)
 
     def mkgname(self):

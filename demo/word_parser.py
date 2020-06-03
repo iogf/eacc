@@ -1,9 +1,9 @@
 """
 """
 
-from eacc.eacc import Eacc, Rule, Grammar
+from eacc.eacc import Eacc, Rule, Grammar, TokVal
 from eacc.lexer import XSpec, Lexer, LexTok
-from eacc.token import Blank, Word, TokVal, Sof, Eof
+from eacc.token import Blank, Word, Sof, Eof
 
 class WordTokens(XSpec):
     t_word  = LexTok(r'[a-zA-Z]+', Word)

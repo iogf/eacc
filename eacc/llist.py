@@ -87,33 +87,3 @@ class LinkedList:
 
     __repr__ = __str__
 
-class Slice:
-    __slots__ = ['head', 'last', 'index']
-    def __init__(self, head, last):
-        self.head = head
-        self.last = last
-        self.index = head
-
-    def get(self):
-        if self.index == self.last:
-            return None
-
-        elem = self.index.elem
-        if self.index != self.last:
-            self.index = self.index.next
-
-        return elem
-
-    def seek(self):
-        if self.index != self.last:
-            self.index = self.index.next
-
-    def lseek(self):
-        if self.index != self.head:
-            self.index = self.index.back
-        
-    def items(self):
-        index = self.head
-        while index != self.index:
-            yield index.elem
-            index = index.next

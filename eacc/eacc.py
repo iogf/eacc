@@ -1,5 +1,5 @@
-from eacc.token import PTree, Sof, Eof, Token, TokType
-from eacc.llist import LinkedList, Slice
+from eacc.token import PTree, Sof, Eof, Token, TokType, Operator
+from eacc.llist import LinkedList
 from itertools import chain
 
 class EaccError(Exception):
@@ -90,9 +90,10 @@ class Eacc:
         self.root = grammar.root
         self.no_errors = no_errors
         self.symtree = SymTree(self.root)
-        self.index  = None
         self.llist = LinkedList()
-        self.hpos = None
+        self.hpos  = None
+        self.index = None
+
         self.handles = {}
 
     def reset(self):
@@ -102,21 +103,12 @@ class Eacc:
     def seek(self):
         self.index = self.llist.next(self.index)
 
-    def get(self):
-        if self.index == self.llist.last:
-            return None
-
-        elem = self.index.elem
-        self.index = self.index.next
-        return elem
-
     def shift(self):
         self.hpos = self.llist.next(self.hpos)
         self.index = self.hpos
 
     def lseek(self):
-        if self.index != self.llist.head:
-            self.index = self.index.back
+        self.index = self.llist.back(self.index)
 
     def tell(self):
         if self.index != self.llist.last:
@@ -130,14 +122,14 @@ class Eacc:
         tseq, (Token('', Eof), ))
 
         self.llist.expand(tseq)
-        self.index = self.llist.first()
-        self.hpos  = self.index
+        self.reset()
 
         ptree = self.process()
         yield from ptree
 
         if not self.llist.empty() and not self.no_errors:
             self.handle_error(self.llist)
+        self.hpos = self.index = None
 
     def process(self):
         match = self.symtree.match
@@ -160,7 +152,11 @@ class Eacc:
         self.reset()
 
     def extend(self, *rules):
-        pass
+        """
+        """
+
+        for ind in rules:
+            self.symtree.update(ind)
 
     def handle_error(self, tokens):
         """
@@ -214,9 +210,6 @@ class Rule(TokType):
 
         ptree = PTree(self.type)
         ptree.extend(data)
-        # print('ptree', ptree)
-        # print('args:', self.args)
-        # print(ptree)
         hmap = eacc.handles.get(self, None)
         if hmap:
             ptree.result = hmap(*ptree)
@@ -272,3 +265,25 @@ class Only(Operator):
 
     def __eq__(self, other):
         pass
+
+class TokVal(Operator):
+    def __init__(self, data):
+        self.data = data
+
+    def opexec(self, eacc, data):
+        token  = eacc.tell()
+        if not token:
+            return None
+
+        if token.data != self.data:
+            return None
+
+        eacc.seek()
+        return token
+
+    def istype(self, tok):
+        return self.type == tok.data
+
+    def __repr__(self):
+        return 'TokVal(%s)' % repr(self.data)
+        
