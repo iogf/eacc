@@ -115,7 +115,7 @@ class Eacc:
         if self.index is not self.llist.last:
             return self.index.elem
 
-    def push(self, tseq):
+    def push_state(self, tseq):
         self.stack.append((self.llist, self.hpos, self.index))
 
         self.llist = LinkedList()
@@ -127,7 +127,11 @@ class Eacc:
         self.hpos  = self.index
 
 
-    def pop(self):
+    def pop_state(self):
+        if not self.llist.empty():
+            if not self.no_errors:
+                self.handle_error(self.llist)    
+
         state = self.stack.pop()
         self.llist = state[0]
         self.hpos  = state[1]
@@ -144,25 +148,21 @@ class Eacc:
         if self.llist and not push:
             self.chain(tseq)
         else:
-            self.push(tseq)
-
+            self.push_state(tseq)
         return self.process()
 
     def process(self):
-        while True:
-            ptree = self.symtree.match(self)
-            if ptree:
-                yield ptree
+        match = self.symtree.match
+
+        while self.index is not None:
+            ptree = match(self)
+            if ptree is not None:
                 self.reduce(ptree)
+                yield ptree
             elif self.hpos.islast():
-                break
+                self.pop_state()
             else:
                 self.shift()
-
-        if not self.llist.empty() and not self.no_errors:
-            self.handle_error(self.llist)
-
-        self.pop()
 
     def reduce(self, ptree):
         if ptree.type:
