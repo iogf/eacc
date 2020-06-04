@@ -1,4 +1,4 @@
-from eacc.token import PTree, Sof, Eof, Token, TokType, Operator
+from eacc.token import PTree, Sof, Eof, Token, TokType
 from eacc.llist import LinkedList
 from itertools import chain
 
@@ -8,7 +8,7 @@ class EaccError(Exception):
 class Grammar:
     pass
 
-class Operator(TokType):
+class TokOp(TokType):
     def __eq__(self, other):
         if not isinstance(self, other.__class__):
             return False
@@ -78,7 +78,7 @@ class SymTree(SymNode):
         node = self
 
         for ind in pattern:
-            if not isinstance(ind, Operator):
+            if not isinstance(ind, TokOp):
                 node = node.kmap.setdefault(ind, SymNode())
             else:
                 node = node.append(ind)
@@ -90,11 +90,12 @@ class Eacc:
         self.root = grammar.root
         self.no_errors = no_errors
         self.symtree = SymTree(self.root)
-        self.llist = LinkedList()
+        self.llist = None
         self.hpos  = None
         self.index = None
 
         self.handles = {}
+        self.stack = []
 
     def reset(self):
         self.index = self.llist.first()
@@ -111,38 +112,57 @@ class Eacc:
         self.index = self.llist.back(self.index)
 
     def tell(self):
-        if self.index != self.llist.last:
+        if self.index is not self.llist.last:
             return self.index.elem
 
-    def build(self, tseq):
-        """
-        """
+    def push(self, tseq):
+        self.stack.append((self.llist, self.hpos, self.index))
 
+        self.llist = LinkedList()
         tseq = chain((Token('', Sof), ), 
         tseq, (Token('', Eof), ))
 
         self.llist.expand(tseq)
-        self.reset()
+        self.index = self.llist.first()
+        self.hpos  = self.index
 
-        ptree = self.process()
-        yield from ptree
 
-        if not self.llist.empty() and not self.no_errors:
-            self.handle_error(self.llist)
-        self.hpos = self.index = None
+    def pop(self):
+        state = self.stack.pop()
+        self.llist = state[0]
+        self.hpos  = state[1]
+        self.index = state[2]
+
+    def chain(self, tseq):
+        for ind in tseq:
+            self.llist.insert(self.hpos, ind)
+
+    def build(self, tseq, push=False):
+        """
+        """
+
+        if self.llist and not push:
+            self.chain(tseq)
+        else:
+            self.push(tseq)
+
+        return self.process()
 
     def process(self):
-        match = self.symtree.match
-
         while True:
-            ptree = match(self)
+            ptree = self.symtree.match(self)
             if ptree:
-                self.reduce(ptree)
                 yield ptree
+                self.reduce(ptree)
             elif self.hpos.islast():
                 break
             else:
                 self.shift()
+
+        if not self.llist.empty() and not self.no_errors:
+            self.handle_error(self.llist)
+
+        self.pop()
 
     def reduce(self, ptree):
         if ptree.type:
@@ -215,7 +235,7 @@ class Rule(TokType):
             ptree.result = hmap(*ptree)
         return ptree
 
-class Times(Operator):
+class Times(TokOp):
     def __init__(self, token, min=1, max=None):
         self.token = token
         self.min = min
@@ -238,7 +258,7 @@ class Times(Operator):
     def __eq__(self, other):
         pass
 
-class Except(Operator):
+class Except(TokOp):
     def __init__(self, *args):
         self.args = args
 
@@ -254,19 +274,28 @@ class Except(Operator):
         return token
 
     def __eq__(self, other):
-        pass
+        result = super(Except, self).__eq__(other)
+        result = result and self.token == other.token
+        result = result and self.min == other.min
+        return result and self.max == other.max
+        
 
-class Only(Operator):
+class Only(Except):
     def __init__(self, *args):
         self.args = args
 
     def opexec(self, eacc, data):
-        pass
+        token = eacc.tell()
+        if not token: 
+            return None
 
-    def __eq__(self, other):
-        pass
+        if not (token.type in self.args): 
+            return None
 
-class TokVal(Operator):
+        eacc.seek()
+        return token
+
+class TokVal(TokOp):
     def __init__(self, data):
         self.data = data
 
@@ -286,4 +315,8 @@ class TokVal(Operator):
 
     def __repr__(self):
         return 'TokVal(%s)' % repr(self.data)
+
+    def __eq__(self, other):
+        result = super(TokVal, self).__eq__(other)
+        return result and (self.data == other.data)
         

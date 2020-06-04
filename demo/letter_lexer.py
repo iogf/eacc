@@ -18,8 +18,16 @@ class LetterTokens(XSpec):
 
     root = [t_letter, t_blank]
 
-print('Example 1')
 lex = Lexer(LetterTokens)
+
+print('Example 1')
+
+data = 'abc def uoc'
+tokens = lex.feed(data)
+print('Consumed:', list(tokens))
+
+print('Example 2')
+
 data = 'abc def uoc 123'
 tokens = lex.feed(data)
 print('Consumed:', list(tokens))

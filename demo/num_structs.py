@@ -1,8 +1,8 @@
 """
 """
 
-from eacc.eacc import Eacc,  Rule, Grammar
-from eacc.lexer import XSpec, Lexer, LexTok, TokVal
+from eacc.eacc import Eacc,  Rule, Grammar, TokVal
+from eacc.lexer import XSpec, Lexer, LexTok
 from eacc.token import TokType, Eof, Sof, Num, Plus, Blank
 
 class Type0(TokType):
