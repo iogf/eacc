@@ -203,33 +203,17 @@ class Rule(TokType):
         """
         self.args = args
         self.type = type
-        self.up   = []
+        self.up   = up
+        self.symtree = SymTree(self.up)
 
-        self.up.extend(up)
-
-    def startswith(self, eacc, data):
-        for ind in self.args:
-            token = ind.opexec(eacc, data)
-            if not token:
-                return False
-        return True
-
-    def precedence(self, eacc, data):
-        for ind in self.up:
-            index = eacc.index
-            prec = ind.startswith(eacc, data)
-            if prec:
-                return False
-            eacc.index = index
-        return True
- 
     def opexec(self, eacc, data):
-        valid = self.precedence(eacc, data)
-        if not valid: 
+        ntree = self.symtree.match(eacc)
+        if ntree: 
             return None
 
         ptree = PTree(self.type)
         ptree.extend(data)
+
         hmap = eacc.handles.get(self, None)
         if hmap:
             ptree.result = hmap(*ptree)
@@ -279,6 +263,12 @@ class Except(TokOp):
         result = result and self.min == other.min
         return result and self.max == other.max
         
+class Any(Except):
+    def opexec(self, eacc, data):
+        token = eacc.tell()
+        if token:
+            eacc.seek()
+        return token
 
 class Only(Except):
     def __init__(self, *args):
