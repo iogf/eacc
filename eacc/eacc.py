@@ -263,7 +263,7 @@ class Except(TokOp):
         result = result and self.min == other.min
         return result and self.max == other.max
         
-class Any(Except):
+class Any(TokOp):
     def opexec(self, eacc, data):
         token = eacc.tell()
         if token:
