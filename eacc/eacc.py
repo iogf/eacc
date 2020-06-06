@@ -234,32 +234,15 @@ class Rule(TokType):
         self.up   = up
         self.symtree = SymTree(up)
 
-    def reduce(self, eacc, data, ntree):
-        token = data.pop()
-        data.append(ntree)
-
-        handle = eacc.handles.get(self)
-        ptree = PTree(self.type, self.args, handle)
-        ptree.extend(data)
-
-        if handle:
-            ptree.result = handle(*ptree)
-        return ptree
-
-    def can_swap(self, ptree, ntree):
-        pass
-
     def opexec(self, eacc, data):
         index = eacc.index
 
-        ntree = self.symtree.step(eacc, data[-1])
-        if ntree:
-            if data[-1].type == ntree.pattern[0]:
-                return self.reduce(eacc, data, ntree)
-            else:
-                return None
-
+        ntree = self.symtree.match(eacc, data)
         eacc.index = index
+
+        if ntree:
+            return None
+
         handle = eacc.handles.get(self)
         ptree = PTree(self.type, self.args, handle)
         ptree.extend(data)
