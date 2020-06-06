@@ -76,6 +76,11 @@ class SymTree(SymNode):
         for ind in rules:
             self.update(ind)
 
+    def step(self, eacc, token):
+        node = self.kmap.get(token.type)
+        if node:
+            return node.match(eacc, [token])
+
     def consume(self, eacc, data=[]):
         token = eacc.tell()
         if not token:
@@ -94,9 +99,7 @@ class SymTree(SymNode):
             if ntree:
                 ptree = ntree
             else:
-                # print('1:', ptree)
                 break
-        # print('2:', ptree)
         return ptree
 
     def update(self, rule):
@@ -220,7 +223,7 @@ class Eacc:
         """
         """
 
-        del self.handles[rule] 
+        pass
 
 class Rule(TokType):
     def __init__(self, *args, up=(), type=None):
@@ -229,23 +232,43 @@ class Rule(TokType):
         self.args = args
         self.type = type
         self.up   = up
-        self.symtree = SymTree(self.up)
+        self.symtree = SymTree(up)
+
+    def reduce(self, eacc, data, ntree):
+        token = data.pop()
+        data.append(ntree)
+
+        handle = eacc.handles.get(self)
+        ptree = PTree(self.type, self.args, handle)
+        ptree.extend(data)
+
+        if handle:
+            ptree.result = handle(*ptree)
+        return ptree
+
+    def can_swap(self, ptree, ntree):
+        pass
 
     def opexec(self, eacc, data):
         index = eacc.index
-        ntree = self.symtree.match(eacc)
-        eacc.index = index
-        # print('ntree', ntree)
-        if ntree: 
-            return None
 
-        ptree = PTree(self.type)
+        ntree = self.symtree.step(eacc, data[-1])
+        if ntree:
+            if data[-1].type == ntree.pattern[0]:
+                return self.reduce(eacc, data, ntree)
+            else:
+                return None
+
+        eacc.index = index
+        handle = eacc.handles.get(self)
+        ptree = PTree(self.type, self.args, handle)
         ptree.extend(data)
-        # print('ptree', ptree)
-        hmap = eacc.handles.get(self, None)
-        if hmap:
-            ptree.result = hmap(*ptree)
+
+        if handle:
+            ptree.result = handle(*ptree)
+
         return ptree
+
 
 class Times(TokOp):
     def __init__(self, token, min=1, max=None, type=None):

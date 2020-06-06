@@ -28,8 +28,8 @@ class CalcGrammar(Grammar):
     o_div   = Rule(Div)
     o_mul   = Rule(Mul)
 
-    r_plus  = Rule(Num, Plus, Num, type=Num, up=(o_mul, o_div))
-    r_minus = Rule(Num, Minus, Num, type=Num, up=(o_mul, o_div))
+    r_plus  = Rule(Num, Plus, Num, type=Num, up=(r_mul, r_div))
+    r_minus = Rule(Num, Minus, Num, type=Num, up=(r_mul, r_div))
 
     # The final structure that is consumed. Once it is
     # consumed then the process stops.
@@ -58,19 +58,20 @@ def done(sof, num, eof):
     return num.val()
 
 data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))+' * 30000 + '2'
-# data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
+data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
 
 # data = '1+2+2+3+2+2+3+8+' * 50000 + '2'
-data = '1+2+3+4+2+5+2-2-1-4+1+1+2+3+1+25*2-2-31-2+1' * 50000 + '3'
+# data = '1+2+3+4+2+5+2-2-1-4+1+1+2+3+1+25*2-2-31-2+1' * 50000 + '3'
+data = '1+2*2/2'
 lexer  = Lexer(CalcTokens)
 tokens = lexer.feed(data)
 eacc   = Eacc(CalcGrammar)
 
 # Link the handles to the patterns.
-eacc.add_handle(CalcGrammar.r_plus, plus)
-eacc.add_handle(CalcGrammar.r_minus, minus)
 eacc.add_handle(CalcGrammar.r_div, div)
 eacc.add_handle(CalcGrammar.r_mul, mul)
+eacc.add_handle(CalcGrammar.r_plus, plus)
+eacc.add_handle(CalcGrammar.r_minus, minus)
 eacc.add_handle(CalcGrammar.r_paren, paren)
 eacc.add_handle(CalcGrammar.r_done, done)
 
