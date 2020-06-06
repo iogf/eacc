@@ -34,10 +34,13 @@ class SymNode:
         if not node:
             return self.runops(eacc, data)
 
+        index = eacc.index
         eacc.seek()
-        node = node.match(eacc, data + [token])
-        if node:
-            return node
+        ptree = node.match(eacc, data + [token])
+
+        if not ptree:    
+            eacc.index = index
+        return ptree
 
     def append(self, op):
         node = OpNode(op)
@@ -72,6 +75,29 @@ class SymTree(SymNode):
 
         for ind in rules:
             self.update(ind)
+
+    def consume(self, eacc, data=[]):
+        token = eacc.tell()
+        if not token:
+            return None
+
+        node = self.kmap.get(token.type)
+        if not node:
+            return self.runops(eacc, data)
+
+        eacc.seek()
+        ptree = node.match(eacc, data + [token])
+
+        ntree = ptree
+        while ptree and ptree.type == token.type:
+            ntree = node.match(eacc, [ntree])
+            if ntree:
+                ptree = ntree
+            else:
+                # print('1:', ptree)
+                break
+        # print('2:', ptree)
+        return ptree
 
     def update(self, rule):
         pattern = iter(rule.args)
@@ -119,8 +145,8 @@ class Eacc:
         self.stack.append((self.llist, self.hpos, self.index))
 
         self.llist = LinkedList()
-        tseq = chain((Token('', Sof), ), 
-        tseq, (Token('', Eof), ))
+        # tseq = chain((Token('', Sof), ), 
+        # tseq, (Token('', Eof), ))
 
         self.llist.expand(tseq)
         self.index = self.llist.first()
@@ -128,9 +154,9 @@ class Eacc:
 
 
     def pop_state(self):
-        if not self.llist.empty():
-            if not self.no_errors:
-                self.handle_error(self.llist)    
+        # if not self.llist.empty():
+            # if not self.no_errors:
+                # self.handle_error(self.llist)    
 
         state = self.stack.pop()
         self.llist = state[0]
@@ -152,10 +178,8 @@ class Eacc:
         return self.process()
 
     def process(self):
-        match = self.symtree.match
-
         while self.index is not None:
-            ptree = match(self)
+            ptree = self.symtree.consume(self)
             if ptree is not None:
                 self.reduce(ptree)
                 yield ptree
@@ -163,6 +187,7 @@ class Eacc:
                 self.pop_state()
             else:
                 self.shift()
+                # print('oo')
 
     def reduce(self, ptree):
         if ptree.type:
@@ -207,13 +232,16 @@ class Rule(TokType):
         self.symtree = SymTree(self.up)
 
     def opexec(self, eacc, data):
+        index = eacc.index
         ntree = self.symtree.match(eacc)
+        eacc.index = index
+        # print('ntree', ntree)
         if ntree: 
             return None
 
         ptree = PTree(self.type)
         ptree.extend(data)
-
+        # print('ptree', ptree)
         hmap = eacc.handles.get(self, None)
         if hmap:
             ptree.result = hmap(*ptree)
@@ -263,7 +291,7 @@ class Except(TokOp):
         result = result and self.min == other.min
         return result and self.max == other.max
         
-class Any(TokOp):
+class DotTok(TokOp):
     def opexec(self, eacc, data):
         token = eacc.tell()
         if token:
