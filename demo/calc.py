@@ -24,9 +24,7 @@ class CalcGrammar(Grammar):
     # ParseTree objects which have a type.
     r_paren = Rule(LP, Num, RP, type=Num)
     r_div   = Rule(Num, Div, Num, type=Num)
-    r_mul   = Rule(Num, Mul, Num, type=Num)
-    o_div   = Rule(Div)
-    o_mul   = Rule(Mul)
+    r_mul   = Rule(Num, Mul, Num, type=Num, up=(r_div,))
 
     r_plus  = Rule(Num, Plus, Num, type=Num, up=(r_mul, r_div))
     r_minus = Rule(Num, Minus, Num, type=Num, up=(r_mul, r_div))
@@ -58,11 +56,11 @@ def done(sof, num, eof):
     return num.val()
 
 data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))+' * 30000 + '2'
-data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
+# data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
 
-# data = '1+2+2+3+2+2+3+8+' * 50000 + '2'
+data = '1+2+2/23-2*3+2/2+3+3+8+' * 50000 + '2'
 # data = '1+2+3+4+2+5+2-2-1-4+1+1+2+3+1+25*2-2-31-2+1' * 50000 + '3'
-data = '1+2*2/2'
+# data = '1+2*2/2'
 lexer  = Lexer(CalcTokens)
 tokens = lexer.feed(data)
 eacc   = Eacc(CalcGrammar)
