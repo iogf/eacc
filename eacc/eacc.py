@@ -34,21 +34,16 @@ class SymNode:
         if not node:
             return self.runops(eacc, data)
 
-        index = eacc.index
         eacc.seek()
-        ptree = node.match(eacc, data + [token])
-
-        if not ptree:    
-            eacc.index = index
         return ptree
+
+    def __repr__(self):
+        return self.kmap.__repr__()
 
     def append(self, op):
         node = OpNode(op)
         self.ops.append(node)
         return node
-
-    def __repr__(self):
-        return self.kmap.__repr__()
 
 class OpNode(SymNode):
     def __init__(self, op):
@@ -56,14 +51,17 @@ class OpNode(SymNode):
         self.op = op
 
     def opexec(self, eacc, data):
-        index = eacc.index
         token = self.op.opexec(eacc, data)
 
         if token:
-            node = self.match(eacc, data + [token])
-            if node:
-                return node
-        eacc.index = index
+            return self.match(eacc, data)
+
+    def appendk(self, symtree, token):
+        if not isinstance(token, TokOp):
+            node = self.kmap.setdefault(ind, SymNode())
+        else:
+            node = self.ops.append(ind)
+        return node
 
     def is_equal(self, other):
         pass
@@ -72,45 +70,44 @@ class SymTree(SymNode):
     def __init__(self, rules=[]):
         super(SymTree, self).__init__()
         self.rules = []
+        self.stack = []
+
+        self.data = None
+        self.node = None
+        self.index = None
 
         for ind in rules:
             self.update(ind)
+    
+    def push_state(self):
+        self.stack.append((self.index, self.node, self.data))
 
-    def step(self, eacc, token):
-        node = self.kmap.get(token.type)
-        if node:
-            return node.match(eacc, [token])
+    def pop_state(self):
+        pass
 
     def consume(self, eacc, data=[]):
-        token = eacc.tell()
-        if not token:
-            return None
+        node = self
+        while True:
+            node = node.match(eacc, data)
+            if not self.isref(node):
+                self.push_state()
 
-        node = self.kmap.get(token.type)
-        if not node:
-            return self.runops(eacc, data)
-
-        eacc.seek()
-        ptree = node.match(eacc, data + [token])
-
-        ntree = ptree
-        while ptree and ptree.type == token.type:
-            ntree = node.match(eacc, [ntree])
-            if ntree:
-                ptree = ntree
-            else:
-                break
-        return ptree
+    def isref(self, node):
+        pass
 
     def update(self, rule):
         pattern = iter(rule.args)
         node = self
 
         for ind in pattern:
-            if not isinstance(ind, TokOp):
-                node = node.kmap.setdefault(ind, SymNode())
+            rnode = self.kmap.get(ind)
+            node = rnode if rnode: else node
+
+            elif: isinstance(ind, TokOp):
+                node = node.kmap.setdefault(ind, rnode)
             else:
                 node = node.append(ind)
+
         node.ops.append(rule)
         self.rules.append(rule)
 
@@ -148,8 +145,8 @@ class Eacc:
         self.stack.append((self.llist, self.hpos, self.index))
 
         self.llist = LinkedList()
-        # tseq = chain((Token('', Sof), ), 
-        # tseq, (Token('', Eof), ))
+        tseq = chain((Token('', Sof), ), 
+        tseq, (Token('', Eof), ))
 
         self.llist.expand(tseq)
         self.index = self.llist.first()
@@ -157,9 +154,9 @@ class Eacc:
 
 
     def pop_state(self):
-        # if not self.llist.empty():
-            # if not self.no_errors:
-                # self.handle_error(self.llist)    
+        if not self.llist.empty():
+            if not self.no_errors:
+                self.handle_error(self.llist)    
 
         state = self.stack.pop()
         self.llist = state[0]
@@ -190,7 +187,6 @@ class Eacc:
                 self.pop_state()
             else:
                 self.shift()
-                # print('oo')
 
     def reduce(self, ptree):
         if ptree.type:
