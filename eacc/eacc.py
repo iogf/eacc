@@ -94,9 +94,7 @@ class SymTree(SymNode):
             if ntree:
                 ptree = ntree
             else:
-                # print('1:', ptree)
                 break
-        # print('2:', ptree)
         return ptree
 
     def update(self, rule):
@@ -145,8 +143,8 @@ class Eacc:
         self.stack.append((self.llist, self.hpos, self.index))
 
         self.llist = LinkedList()
-        # tseq = chain((Token('', Sof), ), 
-        # tseq, (Token('', Eof), ))
+        tseq = chain((Token('', Sof), ), 
+        tseq, (Token('', Eof), ))
 
         self.llist.expand(tseq)
         self.index = self.llist.first()
@@ -154,9 +152,9 @@ class Eacc:
 
 
     def pop_state(self):
-        # if not self.llist.empty():
-            # if not self.no_errors:
-                # self.handle_error(self.llist)    
+        if not self.llist.empty():
+            if not self.no_errors:
+                self.handle_error(self.llist)    
 
         state = self.stack.pop()
         self.llist = state[0]
@@ -187,7 +185,6 @@ class Eacc:
                 self.pop_state()
             else:
                 self.shift()
-                # print('oo')
 
     def reduce(self, ptree):
         if ptree.type:
@@ -235,13 +232,11 @@ class Rule(TokType):
         index = eacc.index
         ntree = self.symtree.match(eacc)
         eacc.index = index
-        # print('ntree', ntree)
         if ntree: 
             return None
 
         ptree = PTree(self.type)
         ptree.extend(data)
-        # print('ptree', ptree)
         hmap = eacc.handles.get(self, None)
         if hmap:
             ptree.result = hmap(*ptree)
@@ -298,7 +293,7 @@ class DotTok(TokOp):
             eacc.seek()
         return token
 
-class Only(Except):
+class Only(TokOp):
     def __init__(self, *args):
         self.args = args
 
