@@ -18,6 +18,11 @@ class SymNode:
     def __init__(self):
         self.kmap = {}
         self.ops  = []
+        self.isref = False
+
+    def connect(self, node):
+        self.kmap.pdate(node.kmap)
+        self.isref = True
 
     def runops(self, eacc, data):
         for ind in self.ops:
@@ -77,7 +82,7 @@ class SymTree(SymNode):
             node = node.match(eacc, tokens)
             if not node:
                 return index, tokens
-            if node[0] == self:
+            if node[0].isref():
                 tokens.append(node[1])
                 stack.append((index, node, tokens))
             elif node[0]:
@@ -104,8 +109,7 @@ class SymTree(SymNode):
 
             ynode = self.kmap.get(ind)
             if ynode:
-                node.kmap.update(ynode.kmap)
-
+                node.connect(ynode)
 
     def update(self, rule):
         node = self
