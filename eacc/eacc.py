@@ -93,14 +93,24 @@ class SymTree(SymNode):
     def reduce(self, stack, index, node, tokens):
         pass
 
+    def make_refs(self, rule):
+        node = self
+        for ind in rule.args:
+            rnode = node.kmap.get(ind)
+            if not rnode:
+                node = rnode.index(ind)
+            else:
+                node = rnode
+
+            ynode = self.kmap.get(ind)
+            if ynode:
+                node.kmap.update(ynode.kmap)
+
+
     def update(self, rule):
-        pattern = iter(rule.args)
         node = self
 
-        for ind in pattern:
-            rnode = self.kmap.get(ind, SymNode())
-            node = rnode if rnode else node
-
+        for ind in rule.args:
             if not isinstance(ind, TokOp):
                 node = node.kmap.setdefault(ind, node)
             else:
