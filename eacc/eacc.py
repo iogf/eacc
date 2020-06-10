@@ -9,10 +9,7 @@ class Grammar:
     pass
 
 class TokOp(TokType):
-    def __eq__(self, other):
-        if not isinstance(self, other.__class__):
-            return False
-        return True
+    pass
 
 class SymNode:
     def __init__(self):
@@ -98,10 +95,8 @@ class SymTree(SymNode):
         return ptree
 
     def update(self, rule):
-        pattern = iter(rule.args)
         node = self
-
-        for ind in pattern:
+        for ind in rule.args:
             if not isinstance(ind, TokOp):
                 node = node.kmap.setdefault(ind, SymNode())
             else:
@@ -131,9 +126,6 @@ class Eacc:
     def shift(self):
         self.hpos = self.llist.next(self.hpos)
         self.index = self.hpos
-
-    def lseek(self):
-        self.index = self.llist.back(self.index)
 
     def tell(self):
         if self.index is not self.llist.last:
@@ -262,9 +254,6 @@ class Times(TokOp):
                     return ptree
             ptree.append(result)
 
-    def __eq__(self, other):
-        pass
-
 class Except(TokOp):
     def __init__(self, *args):
         self.args = args
@@ -280,12 +269,6 @@ class Except(TokOp):
         eacc.seek()
         return token
 
-    def __eq__(self, other):
-        result = super(Except, self).__eq__(other)
-        result = result and self.args == other.args
-        result = result and self.min == other.min
-        return result and self.max == other.max
-        
 class DotTok(TokOp):
     def opexec(self, eacc, data):
         token = eacc.tell()
@@ -329,7 +312,4 @@ class TokVal(TokOp):
     def __repr__(self):
         return 'TokVal(%s)' % repr(self.data)
 
-    def __eq__(self, other):
-        result = super(TokVal, self).__eq__(other)
-        return result and (self.data == other.data)
         
