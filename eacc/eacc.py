@@ -252,7 +252,6 @@ class Times(TokOp):
             else:
                 break
 
-        print(ptree)
         if self.min <= len(ptree) <= self.max:
             return ptree
         return None
