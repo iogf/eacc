@@ -1,5 +1,6 @@
 import unittest
-from eacc.eacc import Rule, Grammar, Eacc, EaccError, TokVal, Except, Times
+from eacc.eacc import Rule, Grammar, Eacc, EaccError, TokVal, \
+Except, Times, Only, DotTok
 from eacc.lexer import Lexer, LexTok, XSpec
 from eacc.token import Word, Plus, Minus, LP, RP, Mul, Div, \
 Num, Blank, Sof, Eof, One, Two, Three, Four, Five
@@ -167,26 +168,27 @@ class TestTokVal(unittest.TestCase):
         with self.assertRaises(EaccError):
             ptree = list(ptree)
 
-class TestExcept(unittest.TestCase):
+class TestOps(unittest.TestCase):
     class ExprTokens(XSpec):
         t_one   = LexTok(r'1', One)
-        t_two  = LexTok(r'2', Two)
+        t_two   = LexTok(r'2', Two)
     
         t_three = LexTok(r'3', Three)
-        t_four = LexTok(r'4', Four)
-        t_five   = LexTok(r'5', Five)
-        t_blank  = LexTok(r' +', Blank, discard=True)
+        t_four  = LexTok(r'4', Four)
+        t_five  = LexTok(r'5', Five)
+        t_blank = LexTok(r' +', Blank, discard=True)
     
         root = [t_one, t_two, t_three, t_four, t_five, t_blank]
     
     class ExprGrammar(Grammar):
         r_num0 = Rule(One, Except(Three), One)
         r_num1 = Rule(One, Times(Except(One)), One)
+        r_num2 = Rule(Four, Times(Only(Five)), Four)
 
         r_sof = Rule(Sof)
         r_eof = Rule(Eof)
     
-        root = [r_num0, r_num1, r_sof, r_eof]
+        root = [r_num0, r_num1, r_num2, r_sof, r_eof]
     
     def setUp(self):
         self.lexer = Lexer(self.ExprTokens)
@@ -198,12 +200,28 @@ class TestExcept(unittest.TestCase):
         ptree  = self.eacc.build(tokens)
         ptree = list(ptree)
 
-class TestTupleParser(unittest.TestCase):
-    def setUp(self):
-        pass
+    def test1(self):
+        data = '122221 14441 121 12241'
+        tokens = self.lexer.feed(data)
+        ptree  = self.eacc.build(tokens)
+        ptree = list(ptree)
 
-    def test_opexec(self):
-        pass
+    def test2(self):
+        data = '122221 14441 121 12241 455554'
+
+        tokens = self.lexer.feed(data)
+        ptree  = self.eacc.build(tokens)
+        ptree = list(ptree)
+
+    def test3(self):
+        data = '122221 14441 121 12241 422224'
+
+        tokens = self.lexer.feed(data)
+        ptree  = self.eacc.build(tokens)
+
+        with self.assertRaises(EaccError):
+            ptree = list(ptree)
+
 
 if __name__ == '__main__':
     unittest.main()
