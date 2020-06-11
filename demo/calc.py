@@ -57,18 +57,20 @@ def done(sof, num, eof):
     print('Result:', num.val())
     return num.val()
 
-data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))' 
-lexer  = Lexer(CalcTokens)
-tokens = lexer.feed(data)
-eacc   = Eacc(CalcGrammar)
-
-# Link the handles to the patterns.
-eacc.add_handle(CalcGrammar.r_plus, plus)
-eacc.add_handle(CalcGrammar.r_minus, minus)
-eacc.add_handle(CalcGrammar.r_div, div)
-eacc.add_handle(CalcGrammar.r_mul, mul)
-eacc.add_handle(CalcGrammar.r_paren, paren)
-eacc.add_handle(CalcGrammar.r_done, done)
-
-ptree = eacc.build(tokens)
-ptree = list(ptree)
+if __name__ == '__main__':
+    data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))' 
+    lexer  = Lexer(CalcTokens)
+    tokens = lexer.feed(data)
+    eacc   = Eacc(CalcGrammar)
+    
+    # Link the handles to the patterns.
+    eacc.add_handle(CalcGrammar.r_plus, plus)
+    eacc.add_handle(CalcGrammar.r_minus, minus)
+    eacc.add_handle(CalcGrammar.r_div, div)
+    eacc.add_handle(CalcGrammar.r_mul, mul)
+    eacc.add_handle(CalcGrammar.r_paren, paren)
+    eacc.add_handle(CalcGrammar.r_done, done)
+    
+    ptree = eacc.build(tokens)
+    ptree = list(ptree)
+    

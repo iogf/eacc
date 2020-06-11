@@ -235,7 +235,7 @@ class Rule(TokType):
         return ptree
 
 class Times(TokOp):
-    def __init__(self, token, min=1, max=None, type=None):
+    def __init__(self, token, min=1, max=999999999, type=None):
         self.token = token
         self.min = min
         self.max = max
@@ -243,16 +243,19 @@ class Times(TokOp):
 
     def opexec(self, eacc, data):
         ptree = PTree(self.type)
+        opexec = self.token.opexec
 
         while True:
-            result = self.token.opexec(eacc, data)
-            if not result:
-                if self.max:
-                    if self.min <= len(ptree) <= self.max:
-                        return ptree
-                if self.min <= len(ptree):
-                    return ptree
-            ptree.append(result)
+            result = opexec(eacc, data)
+            if result:
+                ptree.append(result)
+            else:
+                break
+
+        print(ptree)
+        if self.min <= len(ptree) <= self.max:
+            return ptree
+        return None
 
 class Except(TokOp):
     def __init__(self, *args):

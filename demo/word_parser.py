@@ -19,9 +19,11 @@ class WordGrammar(Grammar):
 
     root = [r_phrase1, r_phrase0, r_sof, r_eof]
 
-data = 'alpha beta gamma zeta' 
-lexer = Lexer(WordTokens)
-eacc  = Eacc(WordGrammar)
-tokens = lexer.feed(data)
-ptree  = eacc.build(tokens)
-print(list(ptree))
+if __name__ == '__main__':
+    data = 'alpha beta gamma zeta' 
+    lexer = Lexer(WordTokens)
+    eacc  = Eacc(WordGrammar)
+    tokens = lexer.feed(data)
+    ptree  = eacc.build(tokens)
+    print(list(ptree))
+    
