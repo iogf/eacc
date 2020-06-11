@@ -184,11 +184,12 @@ class TestOps(unittest.TestCase):
         r_num0 = Rule(One, Except(Three), One)
         r_num1 = Rule(One, Times(Except(One)), One)
         r_num2 = Rule(Four, Times(Only(Five)), Four)
+        r_num3 = Rule(Two, DotTok(), Two)
 
         r_sof = Rule(Sof)
         r_eof = Rule(Eof)
     
-        root = [r_num0, r_num1, r_num2, r_sof, r_eof]
+        root = [r_num0, r_num1, r_num2, r_num3, r_sof, r_eof]
     
     def setUp(self):
         self.lexer = Lexer(self.ExprTokens)
@@ -215,6 +216,23 @@ class TestOps(unittest.TestCase):
 
     def test3(self):
         data = '122221 14441 121 12241 422224'
+
+        tokens = self.lexer.feed(data)
+        ptree  = self.eacc.build(tokens)
+
+        with self.assertRaises(EaccError):
+            ptree = list(ptree)
+
+    def test4(self):
+        data = '242 212 232'
+
+        tokens = self.lexer.feed(data)
+        ptree  = self.eacc.build(tokens)
+
+        ptree = list(ptree)
+
+    def test5(self):
+        data = '212 323'
 
         tokens = self.lexer.feed(data)
         ptree  = self.eacc.build(tokens)
