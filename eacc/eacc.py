@@ -12,93 +12,124 @@ class TokOp(TokType):
     pass
 
 class SymNode:
-    def __init__(self):
+    def __init__(self, symtree):
         self.kmap = {}
         self.ops  = []
+        self.symtree = symtree
 
     def runops(self, eacc, data):
         for ind in self.ops:
-            node  = ind.opexec(eacc, data)
+            node  = ind.feed(eacc)
             if node:
                 return node
 
-    def match(self, eacc, data=[]):
-        token = eacc.tell()
-        if not token:
-            return self.runops(eacc, data)
-
-        node = self.kmap.get(token.type)
+    def feed(self, token):
+        node = self.kmap.get(token)
         if not node:
-            return self.runops(eacc, data)
-
-        index = eacc.index
-        eacc.seek()
-        ptree = node.match(eacc, data + [token])
-
-        if not ptree:    
-            eacc.index = index
-        return ptree
+            return self.runops(token)
+        return node
 
     def append(self, op):
-        node = OpNode(op)
+        node = OpNode(self.symtree, op)
         self.ops.append(node)
         return node
+
+    def haschild(self):
+        return bool(self.kmap) or bool(self.ops)
+
+    def done(self):
+        return None
 
     def __repr__(self):
         return self.kmap.__repr__()
 
 class OpNode(SymNode):
-    def __init__(self, op):
-        super(OpNode, self).__init__()
+    def __init__(self, symtree, op):
+        super(OpNode, self).__init__(symtree)
         self.op = op
 
-    def opexec(self, eacc, data):
+    def feed(self, token):
         index = eacc.index
         token = self.op.opexec(eacc, data)
 
-        if token:
-            node = self.match(eacc, data + [token])
-            if node:
-                return node
         eacc.index = index
 
-    def is_equal(self, other):
+class ExecNode(SymNode):
+    def __init__(self, symtree, rule):
+        super(RuleNode, self).__init__(symtree)
+        self.rule = rule
+
+    def feed(self, token):
         pass
 
+    def done(self):
+        return None
+
+class Match(TokOp):
+    """
+    Match but doesn't consume.
+    """
+
+    def __init__(self, symtree, rule):
+        super(RuleNode, self).__init__(symtree)
+        self.rule = rule
+
+    def feed(self, token):
+        pass
+
+    def done(self):
+        return None
+
+class Rule(TokType):
+    def __init__(self, *args, up=(), type=None):
+        """
+        """
+        self.args = args
+        self.type = type
+        self.up   = up
+        self.symtree = SymTree(self.up)
+
+    def opexec(self, symtree):
+        ptree = PTree(self.type)
+        ptree.extend(data)
+        hmap = eacc.handles.get(self, None)
+        if hmap:
+            ptree.result = hmap(*ptree)
+        return ptree
+
 class SymTree(SymNode):
-    def __init__(self, rules=[]):
+    def __init__(self, eacc):
         super(SymTree, self).__init__()
-        self.rules = []
+        self.rules = eacc.root
+        self.node = None
+        self.stack = []
+        self.eacc = eacc
+        self.tseq = []
 
         for ind in rules:
             self.update(ind)
 
-    def consume(self, eacc, data=[]):
-        token = eacc.tell()
-        if not token:
+    def push(self):
+        pass
+
+    def pop(self):
+        pass
+
+    def feed(self, token):
+        node = self.node if self.node else self
+        node = node.kmap.get(token)
+
+        if not node:
             return None
 
-        node = self.kmap.get(token.type)
-        if not node:
-            return self.runops(eacc, data)
-
-        eacc.seek()
-        ptree = node.match(eacc, data + [token])
-
-        ntree = ptree
-        while ptree and ptree.type == token.type:
-            ntree = node.match(eacc, [ntree])
-            if ntree:
-                ptree = ntree
-            else:
-                break
-        return ptree
+        self.node = node
+        self.tseq.append(token)
 
     def update(self, rule):
         node = self
         for ind in rule.args:
             if not isinstance(ind, TokOp):
-                node = node.kmap.setdefault(ind, SymNode())
+                node = node.kmap.setdefault(ind, SymNode(self))
             else:
                 node = node.append(ind)
         node.ops.append(rule)
@@ -108,7 +139,7 @@ class Eacc:
     def __init__(self, grammar, no_errors=False):
         self.root = grammar.root
         self.no_errors = no_errors
-        self.symtree = SymTree(self.root)
+        self.symtree = SymTree(self)
         self.llist = None
         self.hpos  = None
         self.index = None
@@ -169,7 +200,8 @@ class Eacc:
 
     def process(self):
         while self.index is not None:
-            ptree = self.symtree.consume(self)
+            token = self.llist.tell()
+            ptree = self.symtree.feed(token)
             if ptree is not None:
                 self.reduce(ptree)
                 yield ptree
@@ -211,28 +243,6 @@ class Eacc:
 
         del self.handles[rule] 
 
-class Rule(TokType):
-    def __init__(self, *args, up=(), type=None):
-        """
-        """
-        self.args = args
-        self.type = type
-        self.up   = up
-        self.symtree = SymTree(self.up)
-
-    def opexec(self, eacc, data):
-        index = eacc.index
-        ntree = self.symtree.match(eacc)
-        eacc.index = index
-        if ntree: 
-            return None
-
-        ptree = PTree(self.type)
-        ptree.extend(data)
-        hmap = eacc.handles.get(self, None)
-        if hmap:
-            ptree.result = hmap(*ptree)
-        return ptree
 
 class Times(TokOp):
     def __init__(self, token, min=1, max=999999999, type=None):
@@ -260,7 +270,7 @@ class Except(TokOp):
     def __init__(self, *args):
         self.args = args
 
-    def opexec(self, eacc, data):
+    def opexec(self, symtree, data):
         token = eacc.tell()
         if not token: 
             return None
@@ -272,7 +282,7 @@ class Except(TokOp):
         return token
 
 class DotTok(TokOp):
-    def opexec(self, eacc, data):
+    def opexec(self, symtree, data):
         token = eacc.tell()
         if token:
             eacc.seek()
@@ -282,7 +292,7 @@ class Only(TokOp):
     def __init__(self, *args):
         self.args = args
 
-    def opexec(self, eacc, data):
+    def opexec(self, symtree, data):
         token = eacc.tell()
         if not token: 
             return None
@@ -297,7 +307,7 @@ class TokVal(TokOp):
     def __init__(self, data):
         self.data = data
 
-    def opexec(self, eacc, data):
+    def opexec(self, symtree, data):
         token  = eacc.tell()
         if not token:
             return None

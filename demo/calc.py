@@ -58,7 +58,10 @@ def done(sof, num, eof):
     return num.val()
 
 if __name__ == '__main__':
-    data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))' 
+    data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))+'  * 30000 + '1'
+    data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
+    # data = '1+1+1+1 + 2+'*80000 + '1'
+    # data = '1+2*(1+1)/(1-2*3)* 3-1'
     lexer  = Lexer(CalcTokens)
     tokens = lexer.feed(data)
     eacc   = Eacc(CalcGrammar)
