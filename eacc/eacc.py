@@ -1,4 +1,4 @@
-from eacc.token import PTree, Sof, Eof, Token, TokType
+from eacc.token import PTree, Sof, Eof, Token, TokType, TokOp, TokVal
 from eacc.llist import LinkedList
 from itertools import chain
 
@@ -6,9 +6,6 @@ class EaccError(Exception):
     pass
 
 class Grammar:
-    pass
-
-class TokOp(TokType):
     pass
 
 class SymNode:
@@ -293,25 +290,6 @@ class Only(TokOp):
         eacc.seek()
         return token
 
-class TokVal(TokOp):
-    def __init__(self, data):
-        self.data = data
-
-    def opexec(self, eacc, data):
-        token  = eacc.tell()
-        if not token:
-            return None
-
-        if token.data != self.data:
-            return None
-
-        eacc.seek()
-        return token
-
-    def istype(self, tok):
-        return self.type == tok.data
-
-    def __repr__(self):
-        return 'TokVal(%s)' % repr(self.data)
-
-        
+T = Times
+E = Except
+O = Only

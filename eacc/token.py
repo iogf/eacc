@@ -52,6 +52,30 @@ class TokType:
         eacc.seek()
         return token
 
+class TokOp(TokType):
+    pass
+
+class TokVal(TokOp):
+    def __init__(self, data):
+        self.data = data
+
+    def opexec(self, eacc, data):
+        token  = eacc.tell()
+        if not token:
+            return None
+
+        if token.data != self.data:
+            return None
+
+        eacc.seek()
+        return token
+
+    def istype(self, tok):
+        return self.type == tok.data
+
+    def __repr__(self):
+        return 'TokVal(%s)' % repr(self.data)
+
 class Eof(TokType):
     pass
 
