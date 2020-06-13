@@ -17,9 +17,9 @@ class SymNode:
         self.ops  = []
         self.symtree = symtree
 
-    def runops(self, eacc, data):
+    def runops(self, token):
         for ind in self.ops:
-            node  = ind.feed(eacc)
+            node  = ind.feed(token)
             if node:
                 return node
 
@@ -49,17 +49,18 @@ class OpNode(SymNode):
         self.op = op
 
     def feed(self, token):
-        index = eacc.index
-        token = self.op.opexec(eacc, data)
+        index = self.symtree.eacc.index
+        token = self.op.opexec(self, data)
 
         eacc.index = index
 
 class ExecNode(SymNode):
     def __init__(self, symtree, rule):
-        super(RuleNode, self).__init__(symtree)
+        super(ExecNode, self).__init__(symtree)
         self.rule = rule
 
     def feed(self, token):
+        # index = self.symtree.eacc.index
         pass
 
     def done(self):
@@ -70,15 +71,12 @@ class Match(TokOp):
     Match but doesn't consume.
     """
 
-    def __init__(self, symtree, rule):
-        super(RuleNode, self).__init__(symtree)
-        self.rule = rule
+    def __init__(self, *args):
+        super(Match, self).__init__()
+        self.args = args
 
-    def feed(self, token):
+    def opeexec(self, token):
         pass
-
-    def done(self):
-        return None
 
 class Rule(TokType):
     def __init__(self, *args, up=(), type=None):
@@ -88,6 +86,22 @@ class Rule(TokType):
         self.type = type
         self.up   = up
         self.symtree = SymTree(self.up)
+
+    def startswith(self, eacc):
+        for ind in self.args:
+            token = ind.opexec(eacc)
+            if not token:
+                return False
+        return True
+
+    def precedence(self, eacc):
+        for ind in self.up:
+            index = eacc.index
+            prec = ind.startswith(eacc)
+            if prec:
+                return False
+            eacc.index = index
+        return True
 
     def opexec(self, symtree):
         ptree = PTree(self.type)
@@ -117,10 +131,7 @@ class SymTree(SymNode):
 
     def feed(self, token):
         node = self.node if self.node else self
-        node = node.kmap.get(token)
-
-        if not node:
-            return None
+        node = node.feed(token)
 
         self.node = node
         self.tseq.append(token)
@@ -132,7 +143,7 @@ class SymTree(SymNode):
                 node = node.kmap.setdefault(ind, SymNode(self))
             else:
                 node = node.append(ind)
-        node.ops.append(rule)
+        node.ops.append(ExecNode(self, rule))
         self.rules.append(rule)
 
 class Eacc:
@@ -161,6 +172,14 @@ class Eacc:
     def tell(self):
         if self.index is not self.llist.last:
             return self.index.elem
+
+    def consume(self):
+        if self.index is self.llist.last:
+            return None
+
+        elem = self.index.elem
+        self.index = self.index.next
+        return elem
 
     def push_state(self, tseq):
         self.stack.append((self.llist, self.hpos, self.index))
@@ -200,15 +219,16 @@ class Eacc:
 
     def process(self):
         while self.index is not None:
-            token = self.llist.tell()
-            ptree = self.symtree.feed(token)
-            if ptree is not None:
-                self.reduce(ptree)
-                yield ptree
-            elif self.hpos.islast():
+            token = self.tell()
+            node  = self.symtree.feed(token)
+            if node is not None:
+                self.seek()
+
+            if self.hpos.islast():
                 self.pop_state()
             else:
                 self.shift()
+
 
     def reduce(self, ptree):
         if ptree.type:
