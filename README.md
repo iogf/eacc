@@ -1,27 +1,21 @@
 # Eacc
 
 Python Eacc is a parsing tool it implements a flexible lexer and a straightforward approach
-to build AST's from documents. It uses Python code to specify both lexer and grammar for a given
-document. Eacc can handle more succinctly all parsing cases that existing Python parsing tools
+to analyze documents. It uses Python code to specify both lexer and grammar for a given
+document. 
+
+Eacc can handle succinctly most parsing cases that existing Python parsing tools
 propose to address. 
 
 Documents are split into tokens and a token has a type when a sequence of tokens is matched 
-it evaluates to a specific type then rematcned again against the existing rules. 
+it evaluates to a specific type then rematcned again against the existing rules. The types
+can be function objects it means patterns can be evaluated based on extern conditions. 
 
-When a given token pattern is trigged it is possible to attach a handle to be executed. 
-The handle arguments are the tokens that were matched.
+The fact of it being possible to have a grammar rule associated to a type and the
+type being variable in the context of the program it makes eacc useful for some text analysis problems.
 
-You can build more complex AST's using that approach with handles or you can just evaluate
-the AST's resulting from your grammar specification at the time it is being parsed. It works fairly
-well for simple grammars like basic mathematical expressions.
-
-The approach of defining types for basic structures of data then matching these against existing
-rules it automatically handles the powerful recursivity that exists in Backus-Naur notation 
-with a higher level of expressivity.
-
-The parser has a lookahead mechanism to express precedence when matching rules. It is quite powerful
-to implement parsers to handle document structures. The lookahead mechanism makes it possible
-to handle ambiguous grammar in a similar fashion to Backus-Naur in a succinct approach.
+A document grammar is written mostly in an ambiguous manner. The parser has a lookahead 
+mechanism to express precedence when matching rules. 
 
 # Features
 
@@ -40,8 +34,13 @@ to handle ambiguous grammar in a similar fashion to Backus-Naur in a succinct ap
 - **Pythonic notation for grammars**
     * No need to dig deep into grammar theory.
 
-- **Complex parsing problems succinctly**
-    * Ex: Regex Debugging Tools https://github.com/iogf/crocs
+
+**Note:** For a real and more sophisticated example of eacc usage check out.
+
+Crocs is capable of reading a regex string then generating possible matches for the
+inputed regex.
+
+https://github.com/iogf/crocs
 
 # Basic Example
 

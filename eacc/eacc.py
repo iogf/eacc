@@ -1,6 +1,7 @@
 from eacc.token import PTree, Sof, Eof, Token, TokType, TokOp, TokVal
 from eacc.llist import LinkedList
 from itertools import chain
+from types import FunctionType
 
 class EaccError(Exception):
     pass
@@ -224,7 +225,11 @@ class Rule(TokType):
         if ntree: 
             return None
 
-        ptree = PTree(self.type)
+        type = self.type
+        if isinstance(type, FunctionType):
+            type = self.type(*data)
+    
+        ptree = PTree(type)
         ptree.extend(data)
         hmap = eacc.handles.get(self, None)
         if hmap:
