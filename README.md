@@ -17,13 +17,16 @@ type being variable in the context of the program it makes eacc useful for some 
 A document grammar is written mostly in an ambiguous manner. The parser has a lookahead 
 mechanism to express precedence when matching rules. 
 
+It is possible to extend the document grammar at the time it is being parsed. Such
+a feature is interesting to handle some edge cases.
+
 # Features
 
 - **Fast and flexible Lexer**
     * Use class inheritance to extend/modify your existing lexers.
 
-- **Handle broken documents easily**
-    * Ideal to implement cool IDE's features.
+- **Handle broken documents.**
+    * Useful in some edge cases.
 
 - **Short implementation**
     * You can easily extend or modify functionalities.
@@ -109,25 +112,27 @@ def done(sof, num, eof):
     print('Result:', num.val())
     return num.val()
 
-data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))' 
+if __name__ == '__main__':
+    data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))' 
 
-lexer  = Lexer(CalcTokens)
-tokens = lexer.feed(data)
-eacc   = Eacc(CalcGrammar)
+    lexer  = Lexer(CalcTokens)
+    tokens = lexer.feed(data)
+    eacc   = Eacc(CalcGrammar)
+    
+    # Link the handles to the patterns.
+    eacc.add_handle(CalcGrammar.r_plus, plus)
+    eacc.add_handle(CalcGrammar.r_minus, minus)
+    eacc.add_handle(CalcGrammar.r_div, div)
+    eacc.add_handle(CalcGrammar.r_mul, mul)
+    eacc.add_handle(CalcGrammar.r_paren, paren)
+    eacc.add_handle(CalcGrammar.r_done, done)
+    
+    ptree = eacc.build(tokens)
+    ptree = list(ptree)
 
-# Link the handles to the patterns.
-eacc.add_handle(CalcGrammar.r_plus, plus)
-eacc.add_handle(CalcGrammar.r_minus, minus)
-eacc.add_handle(CalcGrammar.r_div, div)
-eacc.add_handle(CalcGrammar.r_mul, mul)
-eacc.add_handle(CalcGrammar.r_paren, paren)
-eacc.add_handle(CalcGrammar.r_done, done)
-
-ptree = eacc.build(tokens)
-ptree = list(ptree)
 ~~~
 
-The parser has a lookahead mechanism based on rules as well.
+The defined rule below fixes precedence in the above ambiguous grammar.
 
 ~~~python
     r_plus  = Rule(Num, Plus, Num, type=Num, up=(o_mul, o_div))
