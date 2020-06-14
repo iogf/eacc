@@ -2,9 +2,7 @@
 
 Python Eacc is a parsing tool it implements a flexible lexer and a straightforward approach
 to analyze documents. It uses Python code to specify both lexer and grammar for a given
-document. 
-
-Eacc can handle succinctly most parsing cases that existing Python parsing tools
+document. Eacc can handle succinctly most parsing cases that existing Python parsing tools
 propose to address. 
 
 Documents are split into tokens and a token has a type when a sequence of tokens is matched 
