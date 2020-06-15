@@ -22,11 +22,13 @@ class SymNode:
                 return node
 
     def match(self, eacc, data=[]):
-        # Attempt to reduce.
+        # # Attempt to reduce.
         if self.refs:
             self.refs.reduce(eacc)
 
         token = eacc.tell()
+        # print('llist', eacc.llist)
+        # print('token', token)
         if not token:
             return self.runops(eacc, data)
 
@@ -104,6 +106,9 @@ class SymTree(SymNode):
                 ptree = ntree
 
         eacc.llist.sub(index, eacc.index, ptree)
+        eacc.index = eacc.index.back
+        if eacc.index is eacc.llist.first():
+            eacc.hpos = eacc.index
         return ptree
 
     def update(self, rule):
@@ -243,7 +248,7 @@ class Rule(TokType):
         type = self.type
         if isinstance(type, FunctionType):
             type = self.type(*data)
-        print(data)
+
         ptree = PTree(type)
         ptree.extend(data)
         hmap = eacc.handles.get(self, None)
