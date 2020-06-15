@@ -13,6 +13,7 @@ class SymNode:
     def __init__(self):
         self.kmap = {}
         self.ops  = []
+        self.refs = None
 
     def runops(self, eacc, data):
         for ind in self.ops:
@@ -21,6 +22,10 @@ class SymNode:
                 return node
 
     def match(self, eacc, data=[]):
+        # Attempt to reduce.
+        if self.refs:
+            self.refs.reduce(eacc)
+
         token = eacc.tell()
         if not token:
             return self.runops(eacc, data)
@@ -36,6 +41,20 @@ class SymNode:
         if not ptree:    
             eacc.index = index
         return ptree
+
+    def make_refs(self, rule):
+        if not self.refs:
+            self.refs = SymTree()
+
+        if rule.type in self.kmap:
+            self.refs.update(rule)
+        
+        for ind in self.kmap.values():
+            ind.make_refs(rule)
+
+        for ind in self.ops:
+            if isinstance(ind, OpNode):
+                ind.make_refs(rule)
 
     def append(self, op):
         node = OpNode(op)
@@ -60,36 +79,31 @@ class OpNode(SymNode):
                 return node
         eacc.index = index
 
-    def is_equal(self, other):
-        pass
-
 class SymTree(SymNode):
-    def __init__(self, rules=[]):
+    def __init__(self):
         super(SymTree, self).__init__()
         self.rules = []
 
+    def build(self, rules):
         for ind in rules:
             self.update(ind)
 
-    def consume(self, eacc, data=[]):
-        token = eacc.tell()
-        if not token:
+        for ind in rules:
+            self.make_refs(ind)
+
+    def reduce(self, eacc, data=[]):
+        index = eacc.index
+        ptree = self.match(eacc, data)
+        if not ptree:
             return None
 
-        node = self.kmap.get(token.type)
-        if not node:
-            return self.runops(eacc, data)
-
-        eacc.seek()
-        ptree = node.match(eacc, data + [token])
-
         ntree = ptree
-        while ptree and ptree.type == token.type:
-            ntree = node.match(eacc, [ntree])
+        while ntree:
+            ntree = self.match(eacc, data)
             if ntree:
                 ptree = ntree
-            else:
-                break
+
+        eacc.llist.sub(index, eacc.index, ptree)
         return ptree
 
     def update(self, rule):
@@ -106,13 +120,14 @@ class Eacc:
     def __init__(self, grammar, no_errors=False):
         self.root = grammar.root
         self.no_errors = no_errors
-        self.symtree = SymTree(self.root)
+        self.symtree = SymTree()
         self.llist = None
         self.hpos  = None
         self.index = None
 
         self.handles = {}
         self.stack = []
+        self.symtree.build(self.root)
 
     def reset(self):
         self.index = self.llist.first()
@@ -167,7 +182,7 @@ class Eacc:
 
     def process(self):
         while self.index is not None:
-            ptree = self.symtree.consume(self)
+            ptree = self.symtree.match(self)
             if ptree is not None:
                 self.reduce(ptree)
                 yield ptree
@@ -187,8 +202,7 @@ class Eacc:
         """
         """
 
-        for ind in rules:
-            self.symtree.update(ind)
+        self.symtree.build(rules)
 
     def handle_error(self, tokens):
         """
@@ -216,7 +230,8 @@ class Rule(TokType):
         self.args = args
         self.type = type
         self.up   = up
-        self.symtree = SymTree(self.up)
+        self.symtree = SymTree()
+        self.symtree.build(self.up)
 
     def opexec(self, eacc, data):
         index = eacc.index
@@ -228,7 +243,7 @@ class Rule(TokType):
         type = self.type
         if isinstance(type, FunctionType):
             type = self.type(*data)
-    
+        print(data)
         ptree = PTree(type)
         ptree.extend(data)
         hmap = eacc.handles.get(self, None)
