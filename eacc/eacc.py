@@ -22,13 +22,7 @@ class SymNode:
                 return node
 
     def match(self, eacc, data=[]):
-        # # Attempt to reduce.
-        if self.refs:
-            self.refs.reduce(eacc)
-
         token = eacc.tell()
-        # print('llist', eacc.llist)
-        # print('token', token)
         if not token:
             return self.runops(eacc, data)
 
@@ -40,9 +34,17 @@ class SymNode:
         eacc.seek()
         ptree = node.match(eacc, data + [token])
 
-        if not ptree:    
-            eacc.index = index
-        return ptree
+        if ptree:    
+            return ptree
+
+        eacc.index = index
+        if self.refs:
+            ntree = self.refs.reduce(eacc)
+            if ntree:
+                ptree = node.match(eacc, data + [ntree])
+                if ptree:    
+                    return ptree
+        eacc.index = index
 
     def make_refs(self, rule):
         if not self.refs:
@@ -93,22 +95,29 @@ class SymTree(SymNode):
         for ind in rules:
             self.make_refs(ind)
 
+        # for indi in rules:
+            # for indj in self.kmap.values():
+                # indj.make_refs(indi)
+            # for indz in self.ops:
+                # indz.make_refs(indi)
+
     def reduce(self, eacc, data=[]):
         index = eacc.index
-        ptree = self.match(eacc, data)
-        if not ptree:
-            return None
+        ptree = self.match(eacc)
+        if ptree:
+            eacc.llist.sub(index, eacc.index, ptree)
 
-        ntree = ptree
-        while ntree:
-            ntree = self.match(eacc, data)
-            if ntree:
-                ptree = ntree
+        # ptree = None
+        # while True:
+            # ptree = self.match(eacc)
+            # if ptree:
+                # eacc.llist.sub(index, eacc.index, ptree)
+                # index = eacc.index.back
+            # else:
+# 
+                # break
 
-        eacc.llist.sub(index, eacc.index, ptree)
-        eacc.index = eacc.index.back
-        if eacc.index is eacc.llist.first():
-            eacc.hpos = eacc.index
+        # eacc.index= index
         return ptree
 
     def update(self, rule):
