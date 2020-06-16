@@ -93,7 +93,8 @@ class SymTree(SymNode):
             self.update(ind)
 
         for ind in rules:
-            self.make_refs(ind)
+            if not ind.up:
+                self.make_refs(ind)
 
         # for indi in rules:
             # for indj in self.kmap.values():
@@ -103,22 +104,23 @@ class SymTree(SymNode):
 
     def reduce(self, eacc, data=[]):
         index = eacc.index
-        ptree = self.match(eacc)
-        if ptree:
-            eacc.llist.sub(index, eacc.index, ptree)
+        # ptree = self.match(eacc)
+        # if ptree:
+            # eacc.llist.sub(index, eacc.index, ptree)
+        # return ptree
 
-        # ptree = None
-        # while True:
-            # ptree = self.match(eacc)
-            # if ptree:
-                # eacc.llist.sub(index, eacc.index, ptree)
-                # index = eacc.index.back
-            # else:
-# 
-                # break
+        ntree = None
+        while True:
+            ptree = self.match(eacc)
+            if ptree:
+                index = eacc.llist.sub(index, eacc.index, ptree)
+                eacc.index = index
+                ntree = ptree
+            else:
+                eacc.seek()
+                return ntree
 
         # eacc.index= index
-        return ptree
 
     def update(self, rule):
         node = self
