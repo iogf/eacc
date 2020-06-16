@@ -66,7 +66,7 @@ class TestRule(unittest.TestCase):
         self.eacc.add_handle(self.CalcGrammar.r_done, self.done)
         
     def test0(self):
-        data = '1+2/3*(3*2 - 1) /(1-1-2-3-1+2)*3/+ (1 - 2)*10'
+        data = '1+2/3*(3*2 - 1) /(1-1-2-3-1+2)*3/ (1 - 2)*10'
         tokens = self.lexer.feed(data)
         ptree = self.eacc.build(tokens)
         ptree = list(ptree)

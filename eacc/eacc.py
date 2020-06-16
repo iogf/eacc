@@ -104,23 +104,21 @@ class SymTree(SymNode):
 
     def reduce(self, eacc, data=[]):
         index = eacc.index
-        # ptree = self.match(eacc)
-        # if ptree:
-            # eacc.llist.sub(index, eacc.index, ptree)
-        # return ptree
+        ptree = self.match(eacc)
 
-        ntree = None
-        while True:
-            ptree = self.match(eacc)
-            if ptree:
-                index = eacc.llist.sub(index, eacc.index, ptree)
-                eacc.index = index
-                ntree = ptree
-            else:
-                eacc.seek()
-                return ntree
+        if ptree:
+            return self.join(eacc, index, ptree)
 
-        # eacc.index= index
+    def join(self, eacc, index, ptree):
+        node  = self.kmap.get(ptree.type)
+        ntree = ptree
+        while ntree:
+            ntree = node.match(eacc, [ptree])
+            if ntree:
+                ptree = ntree
+
+        eacc.llist.sub(index, eacc.index, ptree)
+        return ptree
 
     def update(self, rule):
         node = self
