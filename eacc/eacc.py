@@ -64,12 +64,16 @@ class OpNode(SymNode):
         pass
 
 class SymTree(SymNode):
-    def __init__(self, rules=[]):
+    def __init__(self):
         super(SymTree, self).__init__()
         self.rules = []
 
+    def build(self, rules):
         for ind in rules:
             self.update(ind)
+
+    def join(self, eacc, ptree):
+        pass
 
     def consume(self, eacc, data=[]):
         token = eacc.tell()
@@ -106,13 +110,14 @@ class Eacc:
     def __init__(self, grammar, no_errors=False):
         self.root = grammar.root
         self.no_errors = no_errors
-        self.symtree = SymTree(self.root)
+        self.symtree = SymTree()
         self.llist = None
         self.hpos  = None
         self.index = None
 
         self.handles = {}
         self.stack = []
+        self.symtree.build(self.root)
 
     def reset(self):
         self.index = self.llist.first()
@@ -216,7 +221,8 @@ class Rule(TokType):
         self.args = args
         self.type = type
         self.up   = up
-        self.symtree = SymTree(self.up)
+        self.symtree = SymTree()
+        self.symtree.build(self.up)
 
     def opexec(self, eacc, data):
         index = eacc.index
