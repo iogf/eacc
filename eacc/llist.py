@@ -46,7 +46,6 @@ class LinkedList:
         lnode = LinkedNode(elem, index.back, lindex)
         index.back.next = lnode
         lindex.back = lnode
-        return lnode
 
     def insert(self, index, elem):
         lnode = LinkedNode(elem, index.back, index)
