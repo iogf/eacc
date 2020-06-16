@@ -92,6 +92,7 @@ class SymTree(SymNode):
         for ind in rules:
             self.update(ind)
 
+
         for ind in rules:
             if not ind.up:
                 self.make_refs(ind)
@@ -102,12 +103,38 @@ class SymTree(SymNode):
             # for indz in self.ops:
                 # indz.make_refs(indi)
 
+    def consume(self, eacc, data=[]):
+        token = eacc.tell()
+        if not token:
+            return None
+
+        node = self.kmap.get(token.type)
+        if not node:
+            return self.runops(eacc, data)
+
+        eacc.seek()
+        ptree = node.match(eacc, data + [token])
+
+        ntree = ptree
+        while ptree and ptree.type == token.type:
+            ntree = node.match(eacc, [ntree])
+            if ntree:
+                ptree = ntree
+            else:
+                break
+        return ptree
+
     def reduce(self, eacc, data=[]):
         index = eacc.index
-        ptree = self.match(eacc)
-
+        ptree = self.consume(eacc)
         if ptree:
-            return self.join(eacc, index, ptree)
+            eacc.llist.sub(index, eacc.index, ptree)
+        return ptree
+
+        # ptree = self.match(eacc)
+# 
+        # if ptree:
+            # return self.join(eacc, index, ptree)
 
     def join(self, eacc, index, ptree):
         node  = self.kmap.get(ptree.type)
@@ -196,7 +223,7 @@ class Eacc:
 
     def process(self):
         while self.index is not None:
-            ptree = self.symtree.match(self)
+            ptree = self.symtree.consume(self)
             if ptree is not None:
                 self.reduce(ptree)
                 yield ptree
