@@ -117,6 +117,13 @@ class Eacc:
         self.index = self.llist.next(self.index)
 
     def shift(self):
+        # hpos = self.next_gap(self.index)
+        # if hpos is self.hpos:
+            # self.hpos = self.index.next
+        # else:
+            # self.hpos = hpos
+        # self.index = self.hpos
+
         self.hpos = self.llist.next(self.hpos)
         self.index = self.hpos
 
@@ -161,10 +168,10 @@ class Eacc:
         return self.process()
 
     def next_gap(self, index):
-        while not index.islast():
+        while not index.isfirst():
             if index.elem.type in self.symtree.kmap:
                 return index
-            index = index.next
+            index = index.back
         return index
 
     def process(self):
@@ -213,6 +220,7 @@ class Eacc:
         """
         print('Crocs Eacc error!')
         print('Tokens:', tokens)
+
         raise EaccError('Unexpected struct!')
 
     def add_handle(self, rule, handle):

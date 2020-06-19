@@ -19,6 +19,10 @@ class PTree(list):
     def val(self):
         return self.result
 
+    def __repr__(self):
+        return '%s(%s=%s)' % (self.type.__name__, 
+        super(PTree, self).__repr__(), self.val())
+
 class Token:
     __slots__=['data', 'offset', 'type', 'value', 
     'start', 'end']

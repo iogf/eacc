@@ -5,6 +5,9 @@ class LinkedNode:
         self.next = next
         self.back = back
 
+    def isfirst(self):
+        return False
+
     def islast(self):
         return False
 
@@ -12,9 +15,15 @@ class HeadNode:
     def __init__(self):
         self.next = None
 
+    def isfirst(self):
+        return True
+
 class LastNode:
     def __init__(self):
         self.back = None
+
+    def isfirst(self):
+        return False
 
     def islast(self):
         return True
