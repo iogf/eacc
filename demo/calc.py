@@ -59,6 +59,8 @@ def done(sof, num, eof):
 
 if __name__ == '__main__':
     data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
+    # data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))+'*70000+'1'
+    data = '1+(1+1)+1+1' * 30000 + '1'
 
     lexer  = Lexer(CalcTokens)
     tokens = lexer.feed(data)

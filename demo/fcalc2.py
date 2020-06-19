@@ -32,15 +32,14 @@ class CalcGrammar(Grammar):
     r_minus = Rule(Expr, Minus, Term, type=Expr)
     r_expr  = Rule(Term, type=Expr)
 
-    r_div   = Rule(Term, Div, Factor, type=Term)
-    r_mul   = Rule(Term, Mul, Factor, type=Term)
-    r_term  = Rule(Factor, type=Term)
+    r_div   = Rule(Term, Div, Num, type=Term)
+    r_mul   = Rule(Term, Mul, Num, type=Term)
+    r_term  = Rule(Num, type=Term)
 
-    r_factor = Rule(Num, type=Factor)
-    r_paren = Rule(LP, Num, RP, type=Factor)
+    r_paren = Rule(LP, Num, RP, type=Num)
     r_done  = Rule(Sof, Expr, Eof)
 
-    root = [r_plus, r_minus, r_expr, r_mul, r_div, r_factor, r_term, r_paren, r_done]
+    root = [r_plus, r_minus, r_expr, r_mul, r_div, r_term, r_paren, r_done]
 
 # The handles mapped to the patterns to compute the expression result.
 def plus(expr, sign, term):
@@ -59,9 +58,6 @@ def mul(term, sign, factor):
     return term.val() * factor.val()
 
 def term(num):
-    return num.val()
-
-def factor(num):
     return num.val()
 
 def paren(left, expression, right):
@@ -84,7 +80,6 @@ eacc.add_handle(CalcGrammar.r_plus, plus)
 eacc.add_handle(CalcGrammar.r_minus, minus)
 eacc.add_handle(CalcGrammar.r_expr, expr)
 eacc.add_handle(CalcGrammar.r_term, term)
-eacc.add_handle(CalcGrammar.r_factor, factor)
 eacc.add_handle(CalcGrammar.r_div, div)
 eacc.add_handle(CalcGrammar.r_mul, mul)
 eacc.add_handle(CalcGrammar.r_paren, paren)
@@ -92,4 +87,5 @@ eacc.add_handle(CalcGrammar.r_done, done)
 
 ptree = eacc.build(tokens)
 ptree = list(ptree)
+
 

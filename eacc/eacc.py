@@ -60,13 +60,11 @@ class OpNode(SymNode):
                 return node
         eacc.index = index
 
-    def is_equal(self, other):
-        pass
-
 class SymTree(SymNode):
     def __init__(self):
         super(SymTree, self).__init__()
         self.rules = []
+        self.eops = set()
 
     def build(self, rules):
         for ind in rules:
@@ -75,12 +73,13 @@ class SymTree(SymNode):
     def reduce(self, eacc, data=[]):
         token = eacc.tell()
         ptree = self.match(eacc, data)
-        if not ptree:
-            return None
+        if ptree:
+            return self.swap(eacc, token.type, ptree)
 
-        node = self.kmap.get(token.type)
+    def swap(self, eacc, toktype, ptree):
+        node = self.kmap.get(toktype)
         ntree = ptree
-        while ntree and ntree.type == token.type:
+        while ntree and ntree.type == toktype:
             ntree = node.match(eacc, [ptree])
             if ntree:
                 ptree = ntree
@@ -95,6 +94,7 @@ class SymTree(SymNode):
                 node = node.append(ind)
         node.ops.append(rule)
         self.rules.append(rule)
+        self.eops.add(rule.args[-1])
 
 class Eacc:
     def __init__(self, grammar, no_errors=False):
@@ -160,23 +160,46 @@ class Eacc:
             self.push_state(tseq)
         return self.process()
 
+    def next_gap(self, index):
+        while not index.islast():
+            if index.elem.type in self.symtree.kmap:
+                return index
+            index = index.next
+        return index
+
     def process(self):
         while self.index is not None:
             ptree = self.symtree.reduce(self)
             if ptree is not None:
-                self.reduce(ptree)
+                self.replace(ptree)
                 yield ptree
             elif self.hpos.islast():
                 self.pop_state()
             else:
                 self.shift()
 
-    def reduce(self, ptree):
+    def replace(self, ptree):
+        # ref = self.hpos.elem
         if ptree.type:
             self.llist.sub(self.hpos, self.index, ptree)
         else:
             self.llist.delete(self.hpos, self.index)
+
+        # index = self.next_gap(self.index)
+        # if index.islast():
+            # self.reset()
+        # else:
+            # self.index = self.hpos = index
+
         self.reset()
+        # if ref.type != ptree.type:
+            # self.reset()
+        # elif self.index.islast():
+            # self.reset()
+        # elif self.index.elem.type in self.symtree.eops:
+            # self.reset()
+        # else:
+            # self.hpos = self.index
 
     def extend(self, *rules):
         """
