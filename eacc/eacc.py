@@ -72,8 +72,13 @@ class OpNode(SymNode):
                 return node
         eacc.index = index
 
-class ExecNode(SymNode):
-    pass
+class Chain(SymNode):
+    def __init__(self, nrule, mrule):
+        self.nrule = nrule
+        self.mrule = mrule
+
+        if nrule.args[0] != mrule.type:
+            raise EaccError("Can't chain!")
 
 class Rule(SymNode):
     def __init__(self, *args, up=(), type=None):
@@ -102,6 +107,12 @@ class Rule(SymNode):
         hmap = eacc.handles.get(self, None)
         if hmap:
             ptree.result = hmap(*ptree)
+
+        node = self.kmap.get(ptree.type)
+        if node:
+            ntree = node.match(eacc, [ptree])
+            if ntree:
+                return ntree
         return ptree
 
 class SymTree(SymNode):
@@ -115,18 +126,11 @@ class SymTree(SymNode):
         # for indi in rules:
             # for indj in rules:
                 # if indi.args[0] == indj.type:
-                    # self.mkrefs(indi, indj)
+                    # if not indj.up:
+                        # self.mkrefs(indj, indi)
 
-    # def mkrefs(self, nrule, mrule):
-        # types = []
-        # for ind in nrule.args:
-            # if ind == mrule.type:
-                # types.append(mrule)
-            # else:
-                # types.append(ind)
-# 
-        # rule = Rule(*types, type=mrule.type, up=nrule.up)
-        # return rule
+    def mkrefs(self, nrule, mrule):
+        nrule.update(mrule)
 
     def reduce(self, eacc, data=[]):
         token = eacc.tell()
@@ -135,10 +139,12 @@ class SymTree(SymNode):
             return self.swap(eacc, token.type, ptree)
 
     def swap(self, eacc, toktype, ptree):
-        node = self.kmap.get(toktype)
+        node  = self.kmap.get(toktype)
+        match = node.match
         ntree = ptree
+
         while ntree and ntree.type == toktype:
-            ntree = node.match(eacc, [ptree])
+            ntree = match(eacc, [ptree])
             if ntree:
                 ptree = ntree
         return ptree
@@ -164,13 +170,6 @@ class Eacc:
         self.index = self.llist.next(self.index)
 
     def shift(self):
-        # hpos = self.next_gap(self.index)
-        # if hpos is self.hpos:
-            # self.hpos = self.index.next
-        # else:
-            # self.hpos = hpos
-        # self.index = self.hpos
-
         self.hpos = self.llist.next(self.hpos)
         self.index = self.hpos
 
@@ -222,8 +221,9 @@ class Eacc:
         return index
 
     def process(self):
+        reduce = self.symtree.reduce
         while self.index is not None:
-            ptree = self.symtree.reduce(self)
+            ptree = reduce(self)
             if ptree is not None:
                 self.replace(ptree)
                 yield ptree
@@ -233,27 +233,11 @@ class Eacc:
                 self.shift()
 
     def replace(self, ptree):
-        # ref = self.hpos.elem
         if ptree.type:
             self.llist.sub(self.hpos, self.index, ptree)
         else:
             self.llist.delete(self.hpos, self.index)
-
-        # index = self.next_gap(self.index)
-        # if index.islast():
-            # self.reset()
-        # else:
-            # self.index = self.hpos = index
-
         self.reset()
-        # if ref.type != ptree.type:
-            # self.reset()
-        # elif self.index.islast():
-            # self.reset()
-        # elif self.index.elem.type in self.symtree.eops:
-            # self.reset()
-        # else:
-            # self.hpos = self.index
 
     def extend(self, *rules):
         """

@@ -34,18 +34,10 @@ class CalcGrammar(Grammar):
     # The final structure that is consumed. Once it is
     # consumed then the process stops.
     r_done  = Rule(Sof, Num, Eof)
-    r_opt0   = Rule(Num, Plus, LP, Num, RP, type=Num)
-    r_opt1   = Rule(Num, Plus, LP, Num, Plus, Num, RP, type=Num)
 
-    root = [r_paren, r_plus, r_minus, r_mul, r_div, r_done, r_opt0, r_opt1]
+    root = [r_paren, r_plus, r_minus, r_mul, r_div, r_done]
 
 # The handles mapped to the patterns to compute the expression result.
-def opt0(expr, sign, lp, num, rp):
-    return expr.val() + num.val()
-
-def opt1(expr, sign, lp, num0, plus, num1, rp):
-    return expr.val() + num0.val() + num1.val()
-
 def plus(expr, sign, term):
     return expr.val() + term.val()
 
@@ -68,8 +60,12 @@ def done(sof, num, eof):
 if __name__ == '__main__':
     data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
     data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))+'*70000+'1'
-    data = '1+(1+1)+1+1' * 80000 + '1'
+    # data = '1+(1+1)+1+1' * 80000 + '1'
     # data = '1*((1+1)+1)'
+    # data = '(1+2)+(2+11)'
+    data = '1+2*3/10 - 2/20 - 10*23/10 + 1' * 30000
+    data = '1+2*3/10 - 2/20 - 10*23/10 + 1' 
+
     lexer  = Lexer(CalcTokens)
     tokens = lexer.feed(data)
     eacc   = Eacc(CalcGrammar)
@@ -80,8 +76,6 @@ if __name__ == '__main__':
     eacc.add_handle(CalcGrammar.r_div, div)
     eacc.add_handle(CalcGrammar.r_mul, mul)
     eacc.add_handle(CalcGrammar.r_paren, paren)
-    eacc.add_handle(CalcGrammar.r_opt1, opt1)
-    eacc.add_handle(CalcGrammar.r_opt0, opt0)
 
     eacc.add_handle(CalcGrammar.r_done, done)
     
