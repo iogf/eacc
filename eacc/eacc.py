@@ -13,6 +13,7 @@ class SymNode:
     def __init__(self):
         self.kmap = {}
         self.ops  = []
+        self.rules = []
 
     def runops(self, eacc, data=[]):
         for ind in self.ops:
@@ -42,8 +43,19 @@ class SymNode:
         self.ops.append(node)
         return node
 
+    def update(self, rule):
+        node = self
+        for ind in rule.args:
+            if not isinstance(ind, TokOp):
+                node = node.kmap.setdefault(ind, SymNode())
+            else:
+                node = node.append(ind)
+        node.ops.append(rule)
+        self.rules.append(rule)
+
     def __repr__(self):
         return self.kmap.__repr__()
+
 
 class OpNode(SymNode):
     def __init__(self, op):
@@ -60,15 +72,61 @@ class OpNode(SymNode):
                 return node
         eacc.index = index
 
+class ExecNode(SymNode):
+    pass
+
+class Rule(SymNode):
+    def __init__(self, *args, up=(), type=None):
+        """
+        """
+        super(Rule, self).__init__()
+        self.args = args
+        self.type = type
+        self.up   = up
+
+        for ind in self.up:
+            self.update(ind)
+
+    def opexec(self, eacc, data):
+        ntree = self.match(eacc)
+        if ntree is None: 
+            return self.mktree(eacc, data)
+
+    def mktree(self, eacc, data):
+        type = self.type
+        if isinstance(type, FunctionType):
+            type = self.type(*data)
+    
+        ptree = PTree(type)
+        ptree.extend(data)
+        hmap = eacc.handles.get(self, None)
+        if hmap:
+            ptree.result = hmap(*ptree)
+        return ptree
+
 class SymTree(SymNode):
     def __init__(self):
         super(SymTree, self).__init__()
-        self.rules = []
-        self.eops = set()
 
     def build(self, rules):
         for ind in rules:
             self.update(ind)
+
+        # for indi in rules:
+            # for indj in rules:
+                # if indi.args[0] == indj.type:
+                    # self.mkrefs(indi, indj)
+
+    # def mkrefs(self, nrule, mrule):
+        # types = []
+        # for ind in nrule.args:
+            # if ind == mrule.type:
+                # types.append(mrule)
+            # else:
+                # types.append(ind)
+# 
+        # rule = Rule(*types, type=mrule.type, up=nrule.up)
+        # return rule
 
     def reduce(self, eacc, data=[]):
         token = eacc.tell()
@@ -84,17 +142,6 @@ class SymTree(SymNode):
             if ntree:
                 ptree = ntree
         return ptree
-
-    def update(self, rule):
-        node = self
-        for ind in rule.args:
-            if not isinstance(ind, TokOp):
-                node = node.kmap.setdefault(ind, SymNode())
-            else:
-                node = node.append(ind)
-        node.ops.append(rule)
-        self.rules.append(rule)
-        self.eops.add(rule.args[-1])
 
 class Eacc:
     def __init__(self, grammar, no_errors=False):
@@ -234,34 +281,6 @@ class Eacc:
         """
 
         del self.handles[rule] 
-
-class Rule(TokType):
-    def __init__(self, *args, up=(), type=None):
-        """
-        """
-        self.args = args
-        self.type = type
-        self.up   = up
-        self.symtree = SymTree()
-        self.symtree.build(self.up)
-
-    def opexec(self, eacc, data):
-        index = eacc.index
-        ntree = self.symtree.match(eacc)
-        eacc.index = index
-        if ntree: 
-            return None
-
-        type = self.type
-        if isinstance(type, FunctionType):
-            type = self.type(*data)
-    
-        ptree = PTree(type)
-        ptree.extend(data)
-        hmap = eacc.handles.get(self, None)
-        if hmap:
-            ptree.result = hmap(*ptree)
-        return ptree
 
 class Times(TokOp):
     def __init__(self, token, min=1, max=999999999, type=None):
