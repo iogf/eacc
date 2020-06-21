@@ -50,7 +50,7 @@ class SymNode:
                 node = node.kmap.setdefault(ind, SymNode())
             else:
                 node = node.append(ind)
-        node.ops.append(rule)
+        node.ops.append(ExecNode(rule))
         self.rules.append(rule)
 
     def __repr__(self):
@@ -72,32 +72,46 @@ class OpNode(SymNode):
                 return node
         eacc.index = index
 
-class Chain(SymNode):
-    def __init__(self, nrule, mrule):
-        self.nrule = nrule
-        self.mrule = mrule
+class ExecNode(SymNode):
+    def __init__(self, rule):
+        super(ExecNode, self).__init__()
+        self.rule = rule
 
-        if nrule.args[0] != mrule.type:
-            raise EaccError("Can't chain!")
+        for ind in self.rule.up:
+            self.update(ind)
 
-class Rule(SymNode):
+    def copy(self):
+        execnode = ExecNode(self.rule)
+        return execnode
+
+    def opexec(self, eacc, data):
+        # if not self.rules:
+            # ntree = self.match(eacc)
+            # if ntree is None: 
+                # return self.mktree(eacc, data)
+# 
+        # ptree = self.mktree(eacc, data)
+        # node = self.kmap.get(ptree.type)
+        # if node:
+            # ntree = node.match(eacc, [ptree])
+            # if ntree:
+                # print('Return:', ntree)
+                # return ntree
+# 
+        # return ptree
+        ntree = self.match(eacc)
+        if ntree is None:
+            return self.rule.opexec(eacc, data)
+
+class Rule(TokOp):
     def __init__(self, *args, up=(), type=None):
         """
         """
-        super(Rule, self).__init__()
         self.args = args
         self.type = type
         self.up   = up
 
-        for ind in self.up:
-            self.update(ind)
-
     def opexec(self, eacc, data):
-        ntree = self.match(eacc)
-        if ntree is None: 
-            return self.mktree(eacc, data)
-
-    def mktree(self, eacc, data):
         type = self.type
         if isinstance(type, FunctionType):
             type = self.type(*data)
@@ -108,11 +122,6 @@ class Rule(SymNode):
         if hmap:
             ptree.result = hmap(*ptree)
 
-        node = self.kmap.get(ptree.type)
-        if node:
-            ntree = node.match(eacc, [ptree])
-            if ntree:
-                return ntree
         return ptree
 
 class SymTree(SymNode):
@@ -126,11 +135,13 @@ class SymTree(SymNode):
         # for indi in rules:
             # for indj in rules:
                 # if indi.args[0] == indj.type:
-                    # if not indj.up:
-                        # self.mkrefs(indj, indi)
+                    # if indi.up and not indj.up:
+                        # self.mkrefs(indi, indj)
 
     def mkrefs(self, nrule, mrule):
-        nrule.update(mrule)
+        mrule.update(nrule.copy())
+
+        # mrule.update(nrule)
 
     def reduce(self, eacc, data=[]):
         token = eacc.tell()
@@ -221,7 +232,7 @@ class Eacc:
         return index
 
     def process(self):
-        reduce = self.symtree.reduce
+        reduce = self.symtree.match
         while self.index is not None:
             ptree = reduce(self)
             if ptree is not None:

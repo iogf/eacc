@@ -115,6 +115,14 @@ class TestRule(unittest.TestCase):
         with self.assertRaises(EaccError):
             ptree = list(ptree)
 
+    def test5(self):
+        data = '1+2*2/2 - 2/2 - 2*2/2+1'
+        tokens = self.lexer.feed(data)
+        ptree = self.eacc.build(tokens)
+        ptree = list(ptree)
+        print('Expr:', data)
+        self.assertEqual(ptree[-1].val(), eval(data))
+
 class TestTokVal(unittest.TestCase):
     class Wordtokens(XSpec):
         t_word  = LexTok(r'[a-zA-Z]+', Word)

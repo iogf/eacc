@@ -27,6 +27,7 @@ class CalcGrammar(Grammar):
     r_mul   = Rule(Num, Mul, Num, type=Num)
     o_div   = Rule(Div)
     o_mul   = Rule(Mul)
+    o_plus   = Rule(Plus)
 
     r_plus  = Rule(Num, Plus, Num, type=Num, up=(o_mul, o_div))
     r_minus = Rule(Num, Minus, Num, type=Num, up=(o_mul, o_div))
@@ -64,7 +65,8 @@ if __name__ == '__main__':
     # data = '1*((1+1)+1)'
     # data = '(1+2)+(2+11)'
     data = '1+2*3/10 - 2/20 - 10*23/10 + 1' * 30000
-    data = '1+2*3/10 - 2/20 - 10*23/10 + 1' 
+    # data = '1+2*2/2 - 2/2 - 2*2/2+1'
+    # data = '(1)*1'
 
     lexer  = Lexer(CalcTokens)
     tokens = lexer.feed(data)
