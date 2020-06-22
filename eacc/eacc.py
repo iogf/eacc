@@ -348,8 +348,13 @@ class Except(TokOp):
         eacc.seek()
 
         return token
+
     def __eq__(self, other):
-        pass
+        if not isinstance(other, Except):
+            return False
+        elif self.args == other.args:
+            return True
+        return False
 
 class DotTok(TokOp):
     def opexec(self, eacc, data):
@@ -359,7 +364,7 @@ class DotTok(TokOp):
         return token
 
     def __eq__(self, other):
-        pass
+        return isinstance(other, DotTok)
 
 class Only(TokOp):
     def __init__(self, *args):
@@ -377,7 +382,11 @@ class Only(TokOp):
         return token
 
     def __eq__(self, other):
-        pass
+        if not isinstance(other, Only):
+            return False
+        elif self.args == other.args:
+            return True
+        return False
 
 T = Times
 E = Except
