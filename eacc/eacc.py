@@ -38,7 +38,10 @@ class SymNode:
             eacc.index = index
         return ptree
 
-    def chain(self, rule):
+    def chain(self, rule, *args):
+        pass
+    
+    def bind_rule(self, rule):
         for ind in self.ops:
             if isinstance(ind, ExecNode):
                 if rule == ind.rule:
@@ -48,11 +51,7 @@ class SymNode:
         self.ops.append(execnode)
         return execnode
 
-    def append(self, op):
-        # if isinstance(ind, OpNode):
-            # if ind.op == op:
-                # return ind
-
+    def bind_op(self, op):
         node = OpNode(op)
         self.ops.append(node)
         return node
@@ -60,16 +59,13 @@ class SymNode:
     def update(self, rule):
         node = self
         for ind in rule.args:
-            if isinstance(ind, Rule):
-                node = node.update(ind)
-            elif not isinstance(ind, TokOp):
+            if not isinstance(ind, TokOp):
                 node = node.kmap.setdefault(ind, SymNode())
             else:
-                node = node.append(ind)
+                node = node.bind_op(ind)
 
-        # node.ops.append(ExecNode(rule))
         self.rules.append(rule)
-        execnode = node.chain(rule)
+        execnode = node.bind_rule(rule)
         return execnode
 
     def __repr__(self):
@@ -94,7 +90,6 @@ class ExecNode(SymNode):
     def __init__(self, rule):
         super(ExecNode, self).__init__()
         self.rule = rule
-        self.clen = len(rule.args)
 
         for ind in self.rule.up:
             self.update(ind)
@@ -104,18 +99,14 @@ class ExecNode(SymNode):
         return execnode
 
     def opexec(self, eacc, data):
-        print('Data0:', data)
-        data = data[-self.clen:]
-        print('Data1:', data)
-
         ptree = self.rule.opexec(eacc, data)
         ntree = self.match(eacc, [ptree])
-        # Precedence rules have no type.
         if ntree:
             if ntree.type:
                 return ntree
-        else:
-            return ptree
+            else:
+                return None
+        return ptree
 
 class Rule(TokOp):
     def __init__(self, *args, up=(), type=None):
@@ -152,8 +143,8 @@ class SymTree(SymNode):
                     # if indi.up and not indj.up:
                         # self.mkrefs(indi, indj)
 
-    def mkrefs(self, nrule, mrule):
-        mrule.update(nrule.copy())
+    # def mkrefs(self, nrule, mrule):
+        # mrule.update(nrule.copy())
 
         # mrule.update(nrule)
 
@@ -314,7 +305,15 @@ class Times(TokOp):
         return None
 
     def __eq__(self, other):
-        pass
+        if self.token != other.token:
+            return False
+        elif self.min != other.min:
+            return False
+        elif self.max != other.max:
+            return False
+        elif self.type != other.type:
+            return False
+        return True
 
 class Except(TokOp):
     def __init__(self, *args):
