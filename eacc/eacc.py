@@ -65,9 +65,7 @@ class SymNode:
     def update(self, rule):
         node = self
         for ind in rule.args:
-            if isinstance(ind, Rule):
-                node = node.update(ind)
-            elif not isinstance(ind, TokOp):
+            if not isinstance(ind, TokOp):
                 node = node.kmap.setdefault(ind, SymNode(self.eacc))
             else:
                 node = node.bind_op(ind)
