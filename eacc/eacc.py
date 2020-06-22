@@ -38,9 +38,6 @@ class SymNode:
             eacc.index = index
         return ptree
 
-    def chain(self, rule, *args):
-        pass
-    
     def bind_rule(self, rule):
         for ind in self.ops:
             if isinstance(ind, ExecNode):
@@ -59,7 +56,9 @@ class SymNode:
     def update(self, rule):
         node = self
         for ind in rule.args:
-            if not isinstance(ind, TokOp):
+            if isinstance(ind, Rule):
+                node = node.update(ind)
+            elif not isinstance(ind, TokOp):
                 node = node.kmap.setdefault(ind, SymNode())
             else:
                 node = node.bind_op(ind)
@@ -99,8 +98,12 @@ class ExecNode(SymNode):
         return execnode
 
     def opexec(self, eacc, data):
-        ptree = self.rule.opexec(eacc, data)
-        ntree = self.match(eacc, [ptree])
+        data0 = data[-len(self.rule.args):]
+        ptree = self.rule.opexec(eacc, data0)
+        data1 = data[:len(data) - len(self.rule.args)]
+        data1.append(ptree)
+        ntree  = self.match(eacc, data1)
+
         if ntree:
             if ntree.type:
                 return ntree
@@ -139,14 +142,21 @@ class SymTree(SymNode):
 
         # for indi in rules:
             # for indj in rules:
-                # if indi.args[0] == indj.type:
-                    # if indi.up and not indj.up:
-                        # self.mkrefs(indi, indj)
+                # self.mkrefs(indi, indj)
+# 
+    # def mkrefs(self, mrule, nrule):
+        # if mrule.args[0] == nrule.type:
+            # self.lchain(mrule, nrule)
 
-    # def mkrefs(self, nrule, mrule):
-        # mrule.update(nrule.copy())
+    def lchain(self, mrule, nrule):
+        mexec = self.update(mrule)
+        rule = Rule(*nrule.args[1:], up=nrule, type=nrule.type)
+        mexec.update(rule)
 
-        # mrule.update(nrule)
+    def rchain(self, mrule, nrule):
+        args = mrule.args[:-1] + (nrule, )
+        rule = Rule(*args, up=mrule, type=mrule.type)
+        self.update(rule)
 
     def reduce(self, eacc, data=[]):
         token = eacc.tell()

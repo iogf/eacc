@@ -32,15 +32,25 @@ class CalcGrammar(Grammar):
     r_plus  = Rule(Num, Plus, Num, type=Num, up=(o_mul, o_div))
     r_minus = Rule(Num, Minus, Num, type=Num, up=(o_mul, o_div))
     
+    r_plus0  = Rule(r_paren, Plus, Num, type=Num, up=(o_mul, o_div))
+    r_plus1  = Rule(Num, Plus, r_paren, type=Num, up=(o_mul, o_div))
+
     # The final structure that is consumed. Once it is
     # consumed then the process stops.
     r_done  = Rule(Sof, Num, Eof)
 
+    # root = [r_paren, r_plus,  r_plus0, r_plus1, r_minus, r_mul, r_div, r_done]
     root = [r_paren, r_plus, r_minus, r_mul, r_div, r_done]
 
 # The handles mapped to the patterns to compute the expression result.
 def plus(expr, sign, term):
     return expr.val() + term.val()
+
+def plus0(num0, sign, num1):
+    return num0.val() + num1.val()
+
+def plus1(num0, sign, num1):
+    return num0.val() + num1.val()
 
 def minus(expr, sign, term):
     return expr.val() - term.val()
@@ -60,21 +70,26 @@ def done(sof, num, eof):
 
 if __name__ == '__main__':
     data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
-    data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))+'*70000+'1'
+    # data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))+'*70000+'1'
     # data = '1+(1+1)+1+1' * 80000 + '1'
     # data = '1*((1+1)+1)'
     # data = '(1+2)+(2+11)'
-    data = '1+2*3/10 - 2/20 - 10*23/10 + 1' * 30000
+    # data = '1+2*3/10 - 2/20 - 10*23/10 + 1' * 30000
     # data = '1+2*2/2 - 2/2 - 2*2/2+1'
     # data = '(1)*1'
     # data = '(1+1)+(1+1)+' * 30000 + '1'
     # data = '(1+1+1)'
+    # data = '(1+1)+2+'*80000+'1'
+    # data = '1+(1)'
     lexer  = Lexer(CalcTokens)
     tokens = lexer.feed(data)
     eacc   = Eacc(CalcGrammar)
     
     # Link the handles to the patterns.
     eacc.add_handle(CalcGrammar.r_plus, plus)
+    # eacc.add_handle(CalcGrammar.r_plus0, plus0)
+    # eacc.add_handle(CalcGrammar.r_plus1, plus1)
+
     eacc.add_handle(CalcGrammar.r_minus, minus)
     eacc.add_handle(CalcGrammar.r_div, div)
     eacc.add_handle(CalcGrammar.r_mul, mul)
