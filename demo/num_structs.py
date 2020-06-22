@@ -21,12 +21,12 @@ class NumTokens(XSpec):
 
 class NumGrammar(Grammar):
     r_type0 = Rule(TokVal('1'), TokVal('+'), TokVal('2'), type=Type0)
-    r_type1 = Rule(Type0, TokVal('+'), TokVal('2'), type=Type1)
-    r_end   = Rule(Sof, Type1, Eof)
+    r_type1 = Rule(Type0, TokVal('+'), TokVal('3'), type=Type1)
+    r_done   = Rule(Sof, Type1, Eof)
 
-    root = [r_type0, r_type1, r_end]
+    root = [r_type0, r_type1, r_done]
 
-data = '1 + 2 + 2'
+data = '1 + 2 + 3'
 lexer = Lexer(NumTokens)
 eacc  = Eacc(NumGrammar)
 tokens = lexer.feed(data)

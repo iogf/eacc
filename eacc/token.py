@@ -20,7 +20,7 @@ class PTree(list):
         return self.result
 
     def __repr__(self):
-        return '%s(%s=%s)' % (self.type.__name__, 
+        return '%s(%s=%s)' % (self.type.__name__ if self.type else None, 
         super(PTree, self).__repr__(), self.val())
 
 class Token:
@@ -65,9 +65,9 @@ class TokVal(TokOp):
 
     def opexec(self, eacc, data):
         token  = eacc.tell()
+
         if not token:
             return None
-
         if token.data != self.data:
             return None
 

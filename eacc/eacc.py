@@ -10,38 +10,42 @@ class Grammar:
     pass
 
 class SymNode:
-    def __init__(self):
+    def __init__(self, eacc):
         self.kmap = {}
         self.ops  = []
         self.rules = []
+        self.eacc = eacc
 
-    def runops(self, eacc, data=[]):
+    def runops(self, data=[]):
         for ind in self.ops:
-            node  = ind.opexec(eacc, data)
+            node  = ind.opexec(data)
             if node:
                 return node
 
-    def match(self, eacc, data=[]):
-        token = eacc.tell()
+    def match(self, data=[]):
+        token = self.eacc.tell()
+
         if not token:
-            return self.runops(eacc, data)
+            return self.runops(data)
 
         node = self.kmap.get(token.type)
         if not node:
-            return self.runops(eacc, data)
+            return self.runops(data)
 
-        index = eacc.index
-        eacc.seek()
-        ptree = node.match(eacc, data + [token])
+        index = self.eacc.index
+        self.eacc.seek()
+        ptree = node.match(data + [token])
 
         if ptree:
             return ptree
 
-        ptree = self.runops(eacc, data)
+        self.eacc.index = index
+
+        ptree = self.runops(data)
         if ptree:
             return ptree
 
-        eacc.index = index
+        self.eacc.index = index
 
     def bind_rule(self, rule):
         for ind in self.ops:
@@ -49,12 +53,12 @@ class SymNode:
                 if rule == ind.rule:
                     return ind
 
-        execnode = ExecNode(rule)
+        execnode = ExecNode(self.eacc, rule)
         self.ops.append(execnode)
         return execnode
 
     def bind_op(self, op):
-        node = OpNode(op)
+        node = OpNode(self.eacc, op)
         self.ops.append(node)
         return node
 
@@ -64,7 +68,7 @@ class SymNode:
             if isinstance(ind, Rule):
                 node = node.update(ind)
             elif not isinstance(ind, TokOp):
-                node = node.kmap.setdefault(ind, SymNode())
+                node = node.kmap.setdefault(ind, SymNode(self.eacc))
             else:
                 node = node.bind_op(ind)
 
@@ -76,44 +80,36 @@ class SymNode:
         return self.kmap.__repr__()
 
 class OpNode(SymNode):
-    def __init__(self, op):
-        super(OpNode, self).__init__()
+    def __init__(self, eacc, op):
+        super(OpNode, self).__init__(eacc)
         self.op = op
 
-    def opexec(self, eacc, data):
-        index = eacc.index
-        token = self.op.opexec(eacc, data)
-
+    def opexec(self, data):
+        index = self.eacc.index
+        token = self.op.opexec(self.eacc, data)
         if token:
-            node = self.match(eacc, data + [token])
+            node = self.match(data + [token])
             if node:
                 return node
-        eacc.index = index
+        self.eacc.index = index
 
 class ExecNode(SymNode):
-    def __init__(self, rule):
-        super(ExecNode, self).__init__()
+    def __init__(self, eacc, rule):
+        super(ExecNode, self).__init__(eacc)
         self.rule = rule
 
         for ind in self.rule.up:
             self.update(ind)
 
-    def copy(self):
-        execnode = ExecNode(self.rule)
-        return execnode
+    def opexec(self, data):
+        # data0 = data[-len(self.rule.args):]
+        # data1 = data[:len(data) - len(self.rule.args)]
+        # data1.append(ptree)
 
-    def opexec(self, eacc, data):
-        data0 = data[-len(self.rule.args):]
-        ptree = self.rule.opexec(eacc, data0)
-        data1 = data[:len(data) - len(self.rule.args)]
-        data1.append(ptree)
-
-        ntree  = self.match(eacc, data1)
+        ptree = self.rule.opexec(self.eacc, data)
+        ntree = self.match(data)
         if ntree:
-            if ntree.type:
-                return ntree
-            else:
-                return None
+            return None
         return ptree
 
 class Rule(TokOp):
@@ -139,57 +135,55 @@ class Rule(TokOp):
 
 class SymTree(SymNode):
     def __init__(self, eacc):
-        super(SymTree, self).__init__()
-        self.eacc = eacc
+        super(SymTree, self).__init__(eacc)
 
     def build(self):
         for ind in self.eacc.root:
             self.update(ind)
 
-    def optmize(self):
-        for indi in self.eacc.root:
-            for indj in self.eacc.root:
-                if indi.up:
-                    print(indi.args, indj.args)
-                    self.mkrefs(indi, indj)
+    # def optmize(self):
+        # for indi in self.eacc.root:
+            # for indj in self.eacc.root:
+                # if indi.up:
+                    # self.mkrefs(indi, indj)
+# 
+    # def mkrefs(self, mrule, nrule):
+        # if mrule.args[0] == nrule.type:
+            # self.lchain(mrule, nrule)
+        # # if mrule.args[-1] == nrule.type:
+            # # self.rchain(mrule, nrule)
+# 
+    # def lchain(self, mrule, nrule):
+        # rule = Rule(nrule, *nrule.args[1:], up=mrule.up, type=mrule.type)
+        # self.update(rule)
+# 
+        # handle = self.eacc.handles.get(mrule)
+        # self.eacc.add_handle(rule, handle)
+# 
+    # def rchain(self, mrule, nrule):
+        # args = mrule.args[:-1] + (nrule, )
+        # rule = Rule(*args, up=mrule.up, type=mrule.type)
+        # self.update(rule)
+# 
+        # handle = self.eacc.handles.get(mrule)
+        # self.eacc.add_handle(rule, handle)
 
-    def mkrefs(self, mrule, nrule):
-        if mrule.args[0] == nrule.type:
-            self.lchain(mrule, nrule)
-        # if mrule.args[-1] == nrule.type:
-            # self.rchain(mrule, nrule)
-
-    def lchain(self, mrule, nrule):
-        rule = Rule(nrule, *nrule.args[1:], up=mrule.up, type=mrule.type)
-        self.update(rule)
-
-        handle = self.eacc.handles.get(mrule)
-        self.eacc.add_handle(rule, handle)
-
-    def rchain(self, mrule, nrule):
-        args = mrule.args[:-1] + (nrule, )
-        rule = Rule(*args, up=mrule.up, type=mrule.type)
-        self.update(rule)
-
-        handle = self.eacc.handles.get(mrule)
-        self.eacc.add_handle(rule, handle)
-
-    def reduce(self, eacc, data=[]):
-        token = eacc.tell()
-        ptree = self.match(eacc, data)
-        if ptree:
-            return self.swap(eacc, token.type, ptree)
-
-    def swap(self, eacc, toktype, ptree):
-        node  = self.kmap.get(toktype)
-        match = node.match
-        ntree = ptree
-
-        while ntree and ntree.type == toktype:
-            ntree = match(eacc, [ptree])
-            if ntree:
-                ptree = ntree
-        return ptree
+    # def reduce(self, eacc, data=[]):
+        # token = eacc.tell()
+        # ptree = self.match(eacc, data)
+        # if ptree:
+            # return self.swap(eacc, token.type, ptree)
+# 
+    # def swap(self, eacc, toktype, ptree):
+        # node  = self.kmap.get(toktype)
+        # match = node.match
+        # ntree = ptree
+# 
+        # while ntree and ntree.type == toktype:
+            # ntree = match(eacc, [ptree])
+            # if ntree:
+                # ptree = ntree
+        # return ptree
 
 class Eacc:
     def __init__(self, grammar, no_errors=False):
@@ -265,7 +259,7 @@ class Eacc:
     def process(self):
         reduce = self.symtree.match
         while self.index is not None:
-            ptree = reduce(self)
+            ptree = reduce()
             if ptree is not None:
                 self.replace(ptree)
                 yield ptree
