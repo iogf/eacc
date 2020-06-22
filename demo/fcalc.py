@@ -71,9 +71,7 @@ def done(sof, num, eof):
     print('Result:', num.val())
     return num.val()
 
-data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))+' * 60000 + '2'
-# data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
-data = '1+1*3'
+data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
 
 lexer  = Lexer(CalcTokens)
 tokens = lexer.feed(data)

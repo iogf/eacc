@@ -34,9 +34,14 @@ class SymNode:
         eacc.seek()
         ptree = node.match(eacc, data + [token])
 
-        if not ptree:    
-            eacc.index = index
-        return ptree
+        if ptree:
+            return ptree
+
+        ptree = self.runops(eacc, data)
+        if ptree:
+            return ptree
+
+        eacc.index = index
 
     def bind_rule(self, rule):
         for ind in self.ops:
@@ -102,8 +107,8 @@ class ExecNode(SymNode):
         ptree = self.rule.opexec(eacc, data0)
         data1 = data[:len(data) - len(self.rule.args)]
         data1.append(ptree)
-        ntree  = self.match(eacc, data1)
 
+        ntree  = self.match(eacc, data1)
         if ntree:
             if ntree.type:
                 return ntree
@@ -133,30 +138,41 @@ class Rule(TokOp):
         return ptree
 
 class SymTree(SymNode):
-    def __init__(self):
+    def __init__(self, eacc):
         super(SymTree, self).__init__()
+        self.eacc = eacc
 
-    def build(self, rules):
-        for ind in rules:
+    def build(self):
+        for ind in self.eacc.root:
             self.update(ind)
 
-        # for indi in rules:
-            # for indj in rules:
-                # self.mkrefs(indi, indj)
-# 
-    # def mkrefs(self, mrule, nrule):
-        # if mrule.args[0] == nrule.type:
-            # self.lchain(mrule, nrule)
+    def optmize(self):
+        for indi in self.eacc.root:
+            for indj in self.eacc.root:
+                if indi.up:
+                    print(indi.args, indj.args)
+                    self.mkrefs(indi, indj)
+
+    def mkrefs(self, mrule, nrule):
+        if mrule.args[0] == nrule.type:
+            self.lchain(mrule, nrule)
+        # if mrule.args[-1] == nrule.type:
+            # self.rchain(mrule, nrule)
 
     def lchain(self, mrule, nrule):
-        mexec = self.update(mrule)
-        rule = Rule(*nrule.args[1:], up=nrule, type=nrule.type)
-        mexec.update(rule)
+        rule = Rule(nrule, *nrule.args[1:], up=mrule.up, type=mrule.type)
+        self.update(rule)
+
+        handle = self.eacc.handles.get(mrule)
+        self.eacc.add_handle(rule, handle)
 
     def rchain(self, mrule, nrule):
         args = mrule.args[:-1] + (nrule, )
-        rule = Rule(*args, up=mrule, type=mrule.type)
+        rule = Rule(*args, up=mrule.up, type=mrule.type)
         self.update(rule)
+
+        handle = self.eacc.handles.get(mrule)
+        self.eacc.add_handle(rule, handle)
 
     def reduce(self, eacc, data=[]):
         token = eacc.tell()
@@ -179,14 +195,14 @@ class Eacc:
     def __init__(self, grammar, no_errors=False):
         self.root = grammar.root
         self.no_errors = no_errors        
-        self.symtree = SymTree()
+        self.symtree = SymTree(self)
         self.llist = None
         self.hpos  = None
         self.index = None
 
         self.handles = {}
         self.stack = []
-        self.symtree.build(self.root)
+        self.symtree.build()
 
     def reset(self):
         self.index = self.llist.first()
