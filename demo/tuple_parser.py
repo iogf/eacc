@@ -13,7 +13,7 @@ class TupleTokens(XSpec):
 
 class TupleGrammar(Grammar):
     # It means to accumulate as many Num tokens as possible.
-    g_num = Times(Num, min=1)
+    g_num = Times(Num, min=1, type=Num)
 
     # Then we trigge such a pattern in this rule.
     r_paren = Rule(LP, g_num, RP, type=Num)
@@ -24,14 +24,15 @@ class TupleGrammar(Grammar):
 def done(sof, expr, eof):
     print('Result:', expr)
 
-print('Example 1')
-data   = '(1 1 1)'
-
-lexer  = Lexer(TupleTokens)
-tokens = lexer.feed(data)
-eacc   = Eacc(TupleGrammar)
-
-ptree  = eacc.build(tokens)
-eacc.add_handle(TupleGrammar.r_done, done)
-
-ptree  = list(ptree)
+if __name__ == '__main__':
+    print('Example 1')
+    data   = '(1 (1 1) ((((1)))))'
+    
+    lexer  = Lexer(TupleTokens)
+    tokens = lexer.feed(data)
+    eacc   = Eacc(TupleGrammar)
+    
+    ptree  = eacc.build(tokens)
+    eacc.add_handle(TupleGrammar.r_done, done)
+    
+    ptree  = list(ptree)    

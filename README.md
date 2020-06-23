@@ -18,6 +18,9 @@ mechanism to express precedence when matching rules.
 It is possible to extend the document grammar at the time it is being parsed. Such
 a feature is interesting to handle some edge cases.
 
+The parser also accept some special operators like Except, Only, Times etc. These
+operators are used to match sequences of tokens based on their token types and length.
+
 # Features
 
 - **Fast and flexible Lexer**

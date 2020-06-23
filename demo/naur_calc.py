@@ -72,22 +72,22 @@ def done(sof, expression, eof):
     print('Result:', expression.val())
     return expression.val()
 
-
-data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
-lexer  = Lexer(CalcTokens)
-tokens = lexer.feed(data)
-eacc   = Eacc(CalcGrammar)
-
-# Map the patterns to handles to evaluate the expression.
-eacc.add_handle(CalcGrammar.r_plus, plus)
-eacc.add_handle(CalcGrammar.r_minus, minus)
-eacc.add_handle(CalcGrammar.r_div, div)
-eacc.add_handle(CalcGrammar.r_mul, mul)
-eacc.add_handle(CalcGrammar.r_paren, paren)
-eacc.add_handle(CalcGrammar.r_done, done)
-eacc.add_handle(CalcGrammar.r_num, num)
-
-# Finally build the AST.
-ptree = eacc.build(tokens)
-ptree = list(ptree)
-
+if __name__ == '__main__':
+    data = '2 * 5 + 10 -(2 * 3 - 10 )+ 30/(1-3+ 4* 10 + (11/1))'
+    lexer  = Lexer(CalcTokens)
+    tokens = lexer.feed(data)
+    eacc   = Eacc(CalcGrammar)
+    
+    # Map the patterns to handles to evaluate the expression.
+    eacc.add_handle(CalcGrammar.r_plus, plus)
+    eacc.add_handle(CalcGrammar.r_minus, minus)
+    eacc.add_handle(CalcGrammar.r_div, div)
+    eacc.add_handle(CalcGrammar.r_mul, mul)
+    eacc.add_handle(CalcGrammar.r_paren, paren)
+    eacc.add_handle(CalcGrammar.r_done, done)
+    eacc.add_handle(CalcGrammar.r_num, num)
+    
+    # Finally build the AST.
+    ptree = eacc.build(tokens)
+    ptree = list(ptree)
+    
