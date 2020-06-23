@@ -46,16 +46,6 @@ class SymNode:
 
         self.eacc.index = index
 
-    def bind_rule(self, rule):
-        for ind in self.ops:
-            if isinstance(ind, ExecNode):
-                if rule == ind.rule:
-                    return ind
-
-        execnode = ExecNode(self.eacc, rule)
-        self.ops.append(execnode)
-        return execnode
-
     def bind_op(self, op):
         for ind in self.ops:
             if ind.op == op:
@@ -74,7 +64,8 @@ class SymNode:
                 node = node.bind_op(ind)
 
         self.rules.append(rule)
-        execnode = node.bind_rule(rule)
+        execnode = ExecNode(self.eacc, rule)
+        node.ops.append(execnode)
         return execnode
 
     def __repr__(self):
