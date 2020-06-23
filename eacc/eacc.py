@@ -93,13 +93,13 @@ class OpNode(SymNode):
 class ExecNode(SymNode):
     def __init__(self, eacc, rule):
         super(ExecNode, self).__init__(eacc)
-        self.rule = rule
+        self.op = rule
 
-        for ind in self.rule.up:
+        for ind in self.op.up:
             self.update(ind)
 
     def opexec(self, data):
-        ptree = self.rule.opexec(self.eacc, data)
+        ptree = self.op.opexec(self.eacc, data)
         ntree = self.match(data)
         if ntree:
             return None
