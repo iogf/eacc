@@ -58,6 +58,10 @@ class SymNode:
         return execnode
 
     def bind_op(self, op):
+        for ind in self.ops:
+            if ind.op == op:
+                return ind
+
         node = OpNode(self.eacc, op)
         self.ops.append(node)
         return node
@@ -76,6 +80,11 @@ class SymNode:
 
     def __repr__(self):
         return self.kmap.__repr__()
+
+class Struct(SymNode):
+    def __init__(self, eacc, *args):
+        super(Struct, self).__init__(eacc)
+        self.args = args
 
 class OpNode(SymNode):
     def __init__(self, eacc, op):
@@ -100,10 +109,6 @@ class ExecNode(SymNode):
             self.update(ind)
 
     def opexec(self, data):
-        # data0 = data[-len(self.rule.args):]
-        # data1 = data[:len(data) - len(self.rule.args)]
-        # data1.append(ptree)
-
         ptree = self.rule.opexec(self.eacc, data)
         ntree = self.match(data)
         if ntree:
@@ -138,33 +143,6 @@ class SymTree(SymNode):
     def build(self):
         for ind in self.eacc.root:
             self.update(ind)
-
-    # def optmize(self):
-        # for indi in self.eacc.root:
-            # for indj in self.eacc.root:
-                # if indi.up:
-                    # self.mkrefs(indi, indj)
-# 
-    # def mkrefs(self, mrule, nrule):
-        # if mrule.args[0] == nrule.type:
-            # self.lchain(mrule, nrule)
-        # # if mrule.args[-1] == nrule.type:
-            # # self.rchain(mrule, nrule)
-# 
-    # def lchain(self, mrule, nrule):
-        # rule = Rule(nrule, *nrule.args[1:], up=mrule.up, type=mrule.type)
-        # self.update(rule)
-# 
-        # handle = self.eacc.handles.get(mrule)
-        # self.eacc.add_handle(rule, handle)
-# 
-    # def rchain(self, mrule, nrule):
-        # args = mrule.args[:-1] + (nrule, )
-        # rule = Rule(*args, up=mrule.up, type=mrule.type)
-        # self.update(rule)
-# 
-        # handle = self.eacc.handles.get(mrule)
-        # self.eacc.add_handle(rule, handle)
 
     # def reduce(self, eacc, data=[]):
         # token = eacc.tell()

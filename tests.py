@@ -312,6 +312,22 @@ class TestOps4(TestOps0):
 
         ptree = list(ptree)
 
+class TestOps5(TestOps0):
+    class ExprGrammar(Grammar):
+        r_num0 = Rule(Four, Times(Only(Five, Two)), Four)
+        r_num1 = Rule(Four, Times(Only(Five, Two)), One)
+
+        r_sof = Rule(Sof)
+        r_eof = Rule(Eof)
+
+        root = [r_num0, r_num1, r_sof, r_eof]
+
+    def test0(self):
+        data = '4222224 45555554 42222221'
+        tokens = self.lexer.feed(data)
+        ptree  = self.eacc.build(tokens)
+        ptree = list(ptree)
+
 
 if __name__ == '__main__':
     unittest.main()
