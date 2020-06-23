@@ -38,7 +38,6 @@ class SymNode:
 
         if ptree:
             return ptree
-
         self.eacc.index = index
 
         ptree = self.runops(data)
@@ -322,9 +321,7 @@ class Except(TokOp):
 
         if token.type in self.args: 
             return None
-
         eacc.seek()
-
         return token
 
     def __eq__(self, other):

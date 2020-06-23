@@ -1,7 +1,7 @@
 
 from distutils.core import setup
 setup(name="eacc",
-      version="3.1.1",
+      version="3.1.2",
       packages=["eacc", ],
       author="Iury O. G. Figueiredo",
       author_email="last.src@gmail.com",
