@@ -1,90 +1,5 @@
-class XNode:
-    def __init__(self):
-        pass
-
-    def is_rulemap(self):
-        return False
-
-class PTree(list):
-    """
-    """
-    __slots__ = ['type', 'result', 'data']
-
-    def __init__(self, type):
-        super(PTree, self).__init__()
-        self.type = type
-        self.data = type
-        self.result = None
-
-    def val(self):
-        return self.result
-
-    def __repr__(self):
-        return '%s(%s=%s)' % (self.type.__name__ if self.type else None, 
-        super(PTree, self).__repr__(), self.val())
-
-class Token:
-    __slots__=['data', 'offset', 'type', 'value', 
-    'start', 'end']
-
-    def __init__(self, data, type=None, value=None, 
-        start=None, end=None):
-
-        self.data = data
-        self.value = value
-        self.type = type
-        self.start = start
-        self.end = end
-
-    def val(self):
-        return self.value
-    
-    def __repr__(self):
-        return '%s(%s)' % (self.type.__name__, repr(self.data))
-
-class TSeq(list):
-    """
-    """
-
-class TokType:
-    @classmethod
-    def opexec(cls, eacc, data):
-        token  = eacc.tell()
-        if not (token and token.type is cls):
-            return None
-
-        eacc.seek()
-        return token
-
-class TokOp(TokType):
-    pass
-
-class TokVal(TokOp):
-    def __init__(self, data):
-        self.data = data
-
-    def opexec(self, eacc, data):
-        token  = eacc.tell()
-
-        if not token:
-            return None
-        if token.data != self.data:
-            return None
-
-        eacc.seek()
-        return token
-
-    def istype(self, tok):
-        return self.type == tok.data
-
-    def __repr__(self):
-        return 'TokVal(%s)' % repr(self.data)
-
-class Eof(TokType):
-    pass
-
-class Sof(TokType):
-    pass
+from eacc.lexer import Token, TokType
+from eacc.eacc import TokVal, Sof, Eof
 
 class Num(TokType):
     pass
@@ -306,4 +221,13 @@ class Nine(TokType):
     pass
 
 class Zero(TokType):
+    pass
+
+class Expr(TokType):
+    pass
+
+class Term(TokType):
+    pass
+
+class Factor(TokType):
     pass

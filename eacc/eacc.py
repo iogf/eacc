@@ -1,4 +1,4 @@
-from eacc.token import PTree, Sof, Eof, Token, TokType, TokOp, TokVal
+from eacc.lexer import Token, TokType, TokOp
 from eacc.llist import LinkedList
 from itertools import chain
 from types import FunctionType
@@ -8,6 +8,51 @@ class EaccError(Exception):
 
 class Grammar:
     pass
+
+class Eof(TokType):
+    pass
+
+class Sof(TokType):
+    pass
+
+class TokVal(TokOp):
+    def __init__(self, data):
+        self.data = data
+
+    def opexec(self, eacc, data):
+        token  = eacc.tell()
+
+        if not token:
+            return None
+        if token.data != self.data:
+            return None
+
+        eacc.seek()
+        return token
+
+    def istype(self, tok):
+        return self.type == tok.data
+
+    def __repr__(self):
+        return 'TokVal(%s)' % repr(self.data)
+
+class PTree(list):
+    """
+    """
+    __slots__ = ['type', 'result', 'data']
+
+    def __init__(self, type):
+        super(PTree, self).__init__()
+        self.type = type
+        self.data = type
+        self.result = None
+
+    def val(self):
+        return self.result
+
+    def __repr__(self):
+        return '%s(%s=%s)' % (self.type.__name__ if self.type else None, 
+        super(PTree, self).__repr__(), self.val())
 
 class SymNode:
     def __init__(self, eacc):

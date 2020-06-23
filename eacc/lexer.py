@@ -1,10 +1,48 @@
-from eacc.token import XNode, Token, TSeq
 import re
 
 class LexError(Exception):
     pass
 
+class XNode:
+    pass
+
 class XSpec:
+    pass
+
+class TSeq(list):
+    pass
+
+class Token:
+    __slots__=['data', 'offset', 'type', 'value', 
+    'start', 'end']
+
+    def __init__(self, data, type=None, value=None, 
+        start=None, end=None):
+
+        self.data = data
+        self.value = value
+        self.type = type
+        self.start = start
+        self.end = end
+
+    def val(self):
+        return self.value
+    
+    def __repr__(self):
+        return '%s(%s)' % (self.type.__name__, repr(self.data))
+
+
+class TokType:
+    @classmethod
+    def opexec(cls, eacc, data):
+        token  = eacc.tell()
+        if not (token and token.type is cls):
+            return None
+
+        eacc.seek()
+        return token
+
+class TokOp(TokType):
     pass
 
 class Lexer:
