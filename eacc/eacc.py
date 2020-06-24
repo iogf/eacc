@@ -101,17 +101,21 @@ class SymNode:
         return node
 
     def update(self, rule):
+        node = self.expand(rule.args)
+        execnode = ExecNode(self.eacc, rule)
+        node.ops.append(execnode)
+        self.rules.append(rule)
+
+        return execnode
+
+    def expand(self, toktypes):
         node = self
-        for ind in rule.args:
+        for ind in toktypes:
             if not isinstance(ind, TokOp):
                 node = node.kmap.setdefault(ind, SymNode(self.eacc))
             else:
                 node = node.bind_op(ind)
-
-        self.rules.append(rule)
-        execnode = ExecNode(self.eacc, rule)
-        node.ops.append(execnode)
-        return execnode
+        return node
 
     def __repr__(self):
         return self.kmap.__repr__()
