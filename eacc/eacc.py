@@ -24,9 +24,6 @@ class TokVal(TokOp):
         eacc.seek()
         return token
 
-    def istype(self, tok):
-        return self.type == tok.data
-
     def __repr__(self):
         return 'TokVal(%s)' % repr(self.data)
 
