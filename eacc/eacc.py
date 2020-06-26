@@ -1,4 +1,4 @@
-from eacc.lexer import Token, TokType, TokOp
+from eacc.lexer import Token, TokType, TokOp, Sof, Eof
 from eacc.llist import LinkedList
 from itertools import chain
 from types import FunctionType
@@ -7,12 +7,6 @@ class EaccError(Exception):
     pass
 
 class Grammar:
-    pass
-
-class Eof(TokType):
-    pass
-
-class Sof(TokType):
     pass
 
 class TokVal(TokOp):
@@ -100,14 +94,6 @@ class SymNode:
         self.ops.append(node)
         return node
 
-    def update(self, rule):
-        node = self.expand(rule.args)
-        execnode = ExecNode(self.eacc, rule)
-        node.ops.append(execnode)
-        self.rules.append(rule)
-
-        return execnode
-
     def expand(self, toktypes):
         node = self
         for ind in toktypes:
@@ -119,11 +105,6 @@ class SymNode:
 
     def __repr__(self):
         return self.kmap.__repr__()
-
-class Struct(SymNode):
-    def __init__(self, eacc, *args):
-        super(Struct, self).__init__(eacc)
-        self.args = args
 
 class OpNode(SymNode):
     def __init__(self, eacc, op):
@@ -145,7 +126,7 @@ class ExecNode(SymNode):
         self.op = rule
 
         for ind in self.op.up:
-            self.update(ind)
+            ind.register(self)
 
     def opexec(self, data):
         ptree = self.op.opexec(self.eacc, data)
@@ -154,6 +135,14 @@ class ExecNode(SymNode):
             return None
         return ptree
 
+class Struct(SymNode):
+    def __init__(self, eacc, *args):
+        super(Struct, self).__init__(eacc)
+        self.args = args
+
+    def register(self, ynode):
+        pass
+
 class Rule(TokOp):
     def __init__(self, *args, up=(), type=None):
         """
@@ -161,6 +150,15 @@ class Rule(TokOp):
         self.args = args
         self.type = type
         self.up   = up
+
+    def register(self, ynode):
+        node = ynode.expand(self.args)
+        execnode = ExecNode(ynode.eacc, self)
+
+        node.ops.append(execnode)
+        node.rules.append(self)
+
+        return execnode
 
     def opexec(self, eacc, data):
         type = self.type
@@ -181,7 +179,7 @@ class SymTree(SymNode):
 
     def build(self):
         for ind in self.eacc.root:
-            self.update(ind)
+            ind.register(self)
 
     # def reduce(self, eacc, data=[]):
         # token = eacc.tell()

@@ -42,6 +42,12 @@ class TokType:
         eacc.seek()
         return token
 
+class Eof(TokType):
+    pass
+
+class Sof(TokType):
+    pass
+
 class TokOp(TokType):
     pass
 

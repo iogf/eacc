@@ -1,5 +1,5 @@
-from eacc.lexer import Token, TokType
-from eacc.eacc import TokVal, Sof, Eof
+from eacc.lexer import Token, TokType, Sof, Eof
+from eacc.eacc import TokVal
 
 class Num(TokType):
     pass
