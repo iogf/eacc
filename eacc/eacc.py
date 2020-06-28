@@ -236,14 +236,18 @@ class Eacc:
 
 
     def pop_state(self):
-        if not self.llist.empty():
-            if not self.no_errors:
-                self.handle_error(self.llist)    
-
         state = self.stack.pop()
+        llist = self.llist
+        
+        # First set the previous state otherwise
+        # it gets messed if Eacc.build is called again.
         self.llist = state[0]
         self.hpos  = state[1]
         self.index = state[2]
+
+        if not llist.empty():
+            if not self.no_errors:
+                self.handle_error(llist)
 
     def chain(self, tseq):
         for ind in tseq:
@@ -267,20 +271,23 @@ class Eacc:
         return index
 
     def process(self):
-        reduce = self.symtree.match
+        """
+        Process the token sequence from Eacc.Build.
+        """
+
         while self.index is not None:
-            ptree = reduce()
-            if ptree is not None:
-                self.replace(ptree)
-                yield ptree
+            pattern = self.symtree.match()
+            if pattern is not None:
+                self.replace_node(pattern)
+                yield pattern
             elif self.hpos.islast():
                 self.pop_state()
             else:
                 self.shift()
 
-    def replace(self, ptree):
-        if ptree.type:
-            self.llist.sub(self.hpos, self.index, ptree)
+    def replace_node(self, pattern):
+        if pattern.type:
+            self.llist.sub(self.hpos, self.index, pattern)
         else:
             self.llist.delete(self.hpos, self.index)
         self.reset()
