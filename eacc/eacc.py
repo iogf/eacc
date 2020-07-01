@@ -223,7 +223,7 @@ class Eacc:
         if self.index is not self.llist.last:
             return self.index.elem
 
-    def push_state(self, tseq):
+    def push_context(self, tseq):
         self.stack.append((self.llist, self.hpos, self.index))
 
         self.llist = LinkedList()
@@ -235,7 +235,7 @@ class Eacc:
         self.hpos  = self.index
 
 
-    def pop_state(self):
+    def pop_context(self):
         state = self.stack.pop()
         llist = self.llist
         
@@ -260,7 +260,7 @@ class Eacc:
         if self.llist and not push:
             self.chain(tseq)
         else:
-            self.push_state(tseq)
+            self.push_context(tseq)
         return self.process()
 
     def next_gap(self, index):
@@ -281,7 +281,7 @@ class Eacc:
                 self.replace_node(pattern)
                 yield pattern
             elif self.hpos.islast():
-                self.pop_state()
+                self.pop_context()
             else:
                 self.shift()
 
