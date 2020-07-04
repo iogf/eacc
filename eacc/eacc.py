@@ -54,30 +54,30 @@ class SymNode:
 
     def runops(self, data=[]):
         for ind in self.ops:
-            node  = ind.opexec(data)
-            if node:
-                return node
+            ptree  = ind.opexec(data)
+            if ptree is not None:
+                return ptree
 
     def match(self, data=[]):
         token = self.eacc.tell()
 
-        if not token:
+        if token is None:
             return self.runops(data)
 
         node = self.kmap.get(token.type)
-        if not node:
+        if node is None:
             return self.runops(data)
 
         index = self.eacc.index
         self.eacc.seek()
         ptree = node.match(data + [token])
 
-        if ptree:
+        if ptree is not None:
             return ptree
         self.eacc.index = index
 
         ptree = self.runops(data)
-        if ptree:
+        if ptree is not None:
             return ptree
 
         self.eacc.index = index
@@ -111,10 +111,10 @@ class OpNode(SymNode):
     def opexec(self, data):
         index = self.eacc.index
         token = self.op.opexec(self.eacc, data)
-        if token:
-            node = self.match(data + [token])
-            if node:
-                return node
+        if token is not None:
+            ptree = self.match(data + [token])
+            if ptree is not None:
+                return ptree
         self.eacc.index = index
 
 class ExecNode(SymNode):
@@ -128,7 +128,7 @@ class ExecNode(SymNode):
     def opexec(self, data):
         ptree = self.op.opexec(self.eacc, data)
         ntree = self.match(data)
-        if ntree:
+        if ntree is not None:
             return None
         return ptree
 
@@ -336,7 +336,6 @@ class Times(TokOp):
                 ptree.append(result)
             else:
                 break
-
         if self.min <= len(ptree) <= self.max:
             return ptree
         return None
@@ -376,7 +375,7 @@ class Except(TokOp):
 class DotTok(TokOp):
     def opexec(self, eacc, data):
         token = eacc.tell()
-        if token:
+        if token is not None:
             eacc.seek()
         return token
 
@@ -389,7 +388,7 @@ class Only(TokOp):
 
     def opexec(self, eacc, data):
         token = eacc.tell()
-        if not token: 
+        if token is None: 
             return None
 
         if not (token.type in self.args): 
