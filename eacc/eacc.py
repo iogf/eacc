@@ -126,10 +126,10 @@ class ExecNode(SymNode):
             ind.register(self)
 
     def opexec(self, data):
-        ptree = self.op.opexec(self.eacc, data)
         ntree = self.match(data)
         if ntree is not None:
             return None
+        ptree = self.op.opexec(self.eacc, data)
         return ptree
 
 class Struct(SymNode):
